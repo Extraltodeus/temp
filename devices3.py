@@ -8,14 +8,13 @@ has_mps = getattr(torch, 'has_mps', False)
 
 cpu = torch.device("cpu")
 
-# test
 def get_optimal_device():
     if torch.cuda.is_available():
         if "shared" not in sys.modules:
             from modules import shared
         if shared.cmd_opts.device_id is not None:
             cuda_device = f"cuda:{shared.cmd_opts.device_id}"
-            print(f'{Selected CUDA device:}{cuda_devices}')
+            print(f'Selected CUDA device:{cuda_devices}')
             return torch.device(cuda_device)
         else:
             return torch.device("cuda")
