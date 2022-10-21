@@ -13,11 +13,10 @@ cpu = torch.device("cpu")
 def get_optimal_device():
     if torch.cuda.is_available():
         from modules import shared
-        print(shared)
-#         if shared.cmd_opts.device_id is not None:
-#             return torch.device(f"cuda:{shared.cmd_opts.device_id}")
-#         else:
-        return torch.device("cuda")
+        if shared.cmd_opts.device_id is not None:
+            return torch.device(f"cuda:{shared.cmd_opts.device_id}")
+        else:
+            return torch.device("cuda")
 
     if has_mps:
         return torch.device("mps")
