@@ -8,7 +8,7 @@ has_mps = getattr(torch, 'has_mps', False)
 
 cpu = torch.device("cpu")
 
-
+# test
 def get_optimal_device():
     if torch.cuda.is_available():
         if "shared" not in sys.modules:
