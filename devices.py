@@ -12,7 +12,7 @@ cpu = torch.device("cpu")
 
 def get_optimal_device():
     if torch.cuda.is_available():
-        return torch.device("cuda:0,1")
+        return torch.device("cuda:1,2")
 
     if has_mps:
         return torch.device("mps")
