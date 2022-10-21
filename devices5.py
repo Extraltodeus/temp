@@ -25,7 +25,6 @@ def get_optimal_device():
             
         if device_id is not None:
             cuda_device = f"cuda:{device_id}"
-            print(f'Selected CUDA device:{cuda_device}')
             return torch.device(cuda_device)
         else:
             return torch.device("cuda")
