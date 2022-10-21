@@ -3,8 +3,8 @@ import contextlib
 import torch
 
 from modules import errors
-from modules.shared import cmd_opts
-print(cmd_opts.device_id)
+from modules import shared
+print(shared.cmd_opts.device_id)
 
 # has_mps is only available in nightly pytorch (for now), `getattr` for compatibility
 has_mps = getattr(torch, 'has_mps', False)
