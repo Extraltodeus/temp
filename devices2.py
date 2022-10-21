@@ -1,7 +1,6 @@
+import sys
 import contextlib
-
 import torch
-
 from modules import errors
 
 # has_mps is only available in nightly pytorch (for now), `getattr` for compatibility
@@ -12,7 +11,8 @@ cpu = torch.device("cpu")
 
 def get_optimal_device():
     if torch.cuda.is_available():
-        from modules import shared
+        if "shared" not in sys.modules:
+            from modules import shared
         if shared.cmd_opts.device_id is not None:
             return torch.device(f"cuda:{shared.cmd_opts.device_id}")
         else:
