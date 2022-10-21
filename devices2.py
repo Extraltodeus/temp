@@ -14,7 +14,9 @@ def get_optimal_device():
         if "shared" not in sys.modules:
             from modules import shared
         if shared.cmd_opts.device_id is not None:
-            return torch.device(f"cuda:{shared.cmd_opts.device_id}")
+            cuda_device = f"cuda:{shared.cmd_opts.device_id}"
+            print(f'{Selected CUDA device: }{cuda_devices})
+            return torch.device(cuda_device)
         else:
             return torch.device("cuda")
 
