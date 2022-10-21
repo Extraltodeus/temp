@@ -12,8 +12,7 @@ cpu = torch.device("cpu")
 
 def get_optimal_device():
     if torch.cuda.is_available():
-        print("GPU ONLY")
-        return torch.device("mps")
+        return torch.device("cuda:0,1")
 
     if has_mps:
         return torch.device("mps")
