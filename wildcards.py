@@ -11,6 +11,9 @@ import gradio as gr
 from modules.processing import Processed, process_images
 from PIL import Image
 from modules.shared import opts, cmd_opts, state
+import modules.face_restoration
+from modules import devices
+import numpy as np
 
 
 class Script(scripts.Script):
@@ -21,10 +24,10 @@ class Script(scripts.Script):
         same_seed = gr.Checkbox(label='Use same seed for each image', value=False)
         use_upscale = gr.Checkbox(label='Use simple upscale', value=False)
         upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
+        restore_face = gr.Checkbox(label='Restore face after upscale', value=True)
+        return [same_seed, upscale_factor, use_upscale, restore_face]
 
-        return [same_seed, upscale_factor, use_upscale]
-
-    def run(self, p, same_seed, upscale_factor, use_upscale):
+    def run(self, p, same_seed, upscale_factor, use_upscale, restore_face):
         def replace_wildcard(chunk):
             if " " not in chunk:
                 file_dir = os.path.dirname(os.path.realpath("__file__"))
@@ -80,7 +83,11 @@ class Script(scripts.Script):
 
             if use_upscale :
                 upscaled_image = simple_upscale(proc.images[0], upscale_factor)
+                x_sample = np.asarray(upscaled_image)
+                x_sample = modules.face_restoration.restore_faces(x_sample)
+                upscaled_image = Image.fromarray(x_sample)
                 images.save_image(upscaled_image, p.outpath_samples, "", proc.seed, proc.prompt, opts.samples_format, info=proc.info, p=p)
+                devices.torch_gc()
 
             if initial_seed is None:
                 initial_info = infotext
