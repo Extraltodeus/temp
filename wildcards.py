@@ -22,7 +22,7 @@ class Script(scripts.Script):
 
     def ui(self, is_img2img):
         same_seed = gr.Checkbox(label='Use same seed for each image', value=False)
-        use_upscale = gr.Checkbox(label='Use simple upscale', value=False)
+        use_upscale = gr.Checkbox(label='Use simple upscale', value=True)
         upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
         restore_face = gr.Checkbox(label='Restore face after upscale', value=True)
         return [same_seed, upscale_factor, use_upscale, restore_face]
