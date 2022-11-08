@@ -83,9 +83,10 @@ class Script(scripts.Script):
 
             if use_upscale :
                 upscaled_image = simple_upscale(proc.images[0], upscale_factor)
-                x_sample = np.asarray(upscaled_image)
-                x_sample = modules.face_restoration.restore_faces(x_sample)
-                upscaled_image = Image.fromarray(x_sample)
+                if restore_face:
+                    x_sample = np.asarray(upscaled_image)
+                    x_sample = modules.face_restoration.restore_faces(x_sample)
+                    upscaled_image = Image.fromarray(x_sample)
                 images.save_image(upscaled_image, p.outpath_samples, "", proc.seed, proc.prompt, opts.samples_format, info=proc.info, p=p)
                 devices.torch_gc()
 
