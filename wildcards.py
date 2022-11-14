@@ -69,32 +69,35 @@ class Script(scripts.Script):
             p.do_not_save_samples = True
 
         output_images = []
-        for batch_no in range(state.job_count):
-            state.job = f"{batch_no+1} out of {state.job_count}"
-            p.prompt = all_prompts[batch_no*p.batch_size:(batch_no+1)*p.batch_size]
-            if cmd_opts.enable_console_prompts:
-                print(f"wildcards.py: {p.prompt}")
-            proc = process_images(p)
-            output_images += proc.images
-            # TODO: Also add wildcard data to exif of individual images, currently only appear on the saved grid.
-            infotext = "Wildcard prompt: "+original_prompt+"\nExample: "+proc.info
-            all_seeds.append(proc.seed)
-            infotexts.append(infotext)
+        try:
+            for batch_no in range(state.job_count):
+                state.job = f"{batch_no+1} out of {state.job_count}"
+                p.prompt = all_prompts[batch_no*p.batch_size:(batch_no+1)*p.batch_size]
+                if cmd_opts.enable_console_prompts:
+                    print(f"wildcards.py: {p.prompt}")
+                proc = process_images(p)
+                output_images += proc.images
+                # TODO: Also add wildcard data to exif of individual images, currently only appear on the saved grid.
+                infotext = "Wildcard prompt: "+original_prompt+"\nExample: "+proc.info
+                all_seeds.append(proc.seed)
+                infotexts.append(infotext)
 
-            if use_upscale :
-                upscaled_image = simple_upscale(proc.images[0], upscale_factor)
-                if restore_face:
-                    x_sample = np.asarray(upscaled_image)
-                    x_sample = modules.face_restoration.restore_faces(x_sample)
-                    upscaled_image = Image.fromarray(x_sample)
-                images.save_image(upscaled_image, p.outpath_samples, "", proc.seed, proc.prompt, opts.samples_format, info=proc.info, p=p)
-                devices.torch_gc()
+                if use_upscale :
+                    upscaled_image = simple_upscale(proc.images[0], upscale_factor)
+                    if restore_face:
+                        x_sample = np.asarray(upscaled_image)
+                        x_sample = modules.face_restoration.restore_faces(x_sample)
+                        upscaled_image = Image.fromarray(x_sample)
+                    images.save_image(upscaled_image, p.outpath_samples, "", proc.seed, proc.prompt, opts.samples_format, info=proc.info, p=p)
+                    devices.torch_gc()
 
-            if initial_seed is None:
-                initial_info = infotext
-                initial_seed = proc.seed
-            if not same_seed:
-                p.seed = proc.seed+1
+                if initial_seed is None:
+                    initial_info = infotext
+                    initial_seed = proc.seed
+                if not same_seed:
+                    p.seed = proc.seed+1
+        except Exception as e:
+            pass
 
 
         p.do_not_save_grid = original_do_not_save_grid
