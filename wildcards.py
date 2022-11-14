@@ -27,7 +27,7 @@ class Script(scripts.Script):
         restore_face = gr.Checkbox(label='Restore face after upscale', value=True)
         return [same_seed, upscale_factor, use_upscale, restore_face]
 
-    def run(self, p, same_seed, upscale_factor, use_upscale, restore_face):
+    def run(self, p, same_seed, use_upscale, upscale_factor, restore_face):
         def replace_wildcard(chunk):
             if " " not in chunk:
                 file_dir = os.path.dirname(os.path.realpath("__file__"))
