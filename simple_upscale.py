@@ -29,4 +29,5 @@ class Script(scripts.Script):
         w, h = image.size
         w = int(w * simple_upscale_factor)
         h = int(h * simple_upscale_factor)
-        return image.resize((w, h), Image.Resampling.LANCZOS)
+        image = image.resize((w, h), Image.Resampling.LANCZOS)
+        return image
