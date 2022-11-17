@@ -26,10 +26,7 @@ class Script(scripts.Script):
         return [simple_upscale_factor]
       
     def batch_postprocess(self, p, image, simple_upscale_factor):
-        def simple_upscale(img, simple_upscale_factor):
-            w, h = img.size
-            w = int(w * simple_upscale_factor)
-            h = int(h * simple_upscale_factor)
-            return img.resize((w, h), Image.Resampling.LANCZOS)
-        simple_upscale(image, simple_upscale_factor)
-        images.save_image(image, p.outpath_samples, "", p=p)
+        w, h = image.size
+        w = int(w * simple_upscale_factor)
+        h = int(h * simple_upscale_factor)
+        return image.resize((w, h), Image.Resampling.LANCZOS)
