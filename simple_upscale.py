@@ -22,14 +22,14 @@ class Script(scripts.Script):
         return scripts.AlwaysVisible
 
     def ui(self, is_img2img):
-        upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
-        return [upscale_factor]
+        simple_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
+        return [simple_upscale_factor]
       
-    def batch_postprocess(self, p, image, *args, **kwargs):
-        def simple_upscale(img, upscale_factor):
+    def batch_postprocess(self, p, image, simple_upscale_factor, *args):
+        def simple_upscale(img, simple_upscale_factor):
             w, h = img.size
-            w = int(w * upscale_factor)
-            h = int(h * upscale_factor)
+            w = int(w * simple_upscale_factor)
+            h = int(h * simple_upscale_factor)
             return img.resize((w, h), Image.Resampling.LANCZOS)
-        simple_upscale(image, upscale_factor)
+        simple_upscale(image, simple_upscale_factor)
         images.save_image(image, p.outpath_samples, "", p=p)
