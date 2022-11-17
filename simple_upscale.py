@@ -19,7 +19,7 @@ class Script(scripts.Script):
         return "Lanczos simple upscale"
       
     def show(self, is_img2img):
-        return True
+        return scripts.AlwaysVisible
 
     def ui(self, is_img2img):
         upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
