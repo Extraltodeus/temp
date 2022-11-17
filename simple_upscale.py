@@ -31,5 +31,5 @@ class Script(scripts.Script):
             w = int(w * simple_upscale_factor)
             h = int(h * simple_upscale_factor)
             return img.resize((w, h), Image.Resampling.LANCZOS)
-        simple_upscale(image, simple_upscale_factor)
+        simple_upscale(image, p.simple_upscale_factor)
         images.save_image(image, p.outpath_samples, "", p=p)
