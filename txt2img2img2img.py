@@ -3,6 +3,7 @@ from modules.processing import Processed, StableDiffusionProcessingImg2Img, proc
 from PIL import Image
 import gradio as gr
 import modules.scripts as scripts
+from modules import sd_samplers
 
 class Script(scripts.Script):
     def title(self):
@@ -10,16 +11,18 @@ class Script(scripts.Script):
 
     def ui(self, is_img2img):
         if is_img2img: return
-        t2iii_reprocess = gr.Slider(minimum=0, maximum=10, step=1, label='Number of img2img', value=2)
+        img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
+        t2iii_reprocess = gr.Slider(minimum=0, maximum=10, step=1, label='Number of img2img', value=3)
         t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps', value=30)
-        t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=14)
+        t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=12)
         t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+', value=1000)
-        t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.1, label='img2img denoising strength', value=0.3)
-        t2iii_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Stretch before save (factor)', value=2)
+        t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.01, label='img2img denoising strength', value=0.4)
+        t2iii_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Stretch before save (factor, 1=disabled)', value=2)
         t2iii_only_last = gr.Checkbox(label='Only save the last img2img', value=True)
-        return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor,t2iii_only_last]
+        t2iii_sampler = gr.Dropdown(label="Sampler", choices=img2img_samplers_names, value="DDIM")
+        return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor,t2iii_only_last,t2iii_sampler]
 
-    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor,t2iii_only_last):
+    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor,t2iii_only_last,t2iii_sampler):
         def simple_upscale(img, factor):
             w, h = img.size
             w = int(w * factor)
@@ -53,13 +56,14 @@ class Script(scripts.Script):
                     outpath_grids=p.outpath_grids,
                     prompt=proc.info.split("\nNegative prompt")[0],
                     styles=p.styles,
-                    seed=proc_temp.seed+t2iii_seed_shift,
+                    seed=proc_temp.seed+t2iii_seed_shift-1,
                     subseed=proc_temp.subseed,
                     subseed_strength=p.subseed_strength,
                     seed_resize_from_h=p.seed_resize_from_h,
                     seed_resize_from_w=p.seed_resize_from_w,
                     #seed_enable_extras=p.seed_enable_extras,
-                    sampler_index=p.sampler_index,
+                    # sampler_index=p.sampler_index,
+                    sampler=t2iii_sampler,
                     batch_size=p.batch_size,
                     n_iter=p.n_iter,
                     steps=t2iii_steps,
@@ -76,8 +80,11 @@ class Script(scripts.Script):
                     eta=p.eta
                     )
                 proc2 = process_images(img2img_processing)
-                if (t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last:
-                    image = simple_upscale(proc2.images[0],t2iii_upscale_factor)
+                if (t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last :
+                    if t2iii_upscale_factor > 1:
+                        image = simple_upscale(proc2.images[0],t2iii_upscale_factor)
+                    else:
+                        image = proc2.images[0]
                     images.save_image(image, p.outpath_samples, "", proc2.seed+i, proc2.prompt, opts.samples_format, info= proc2.info, p=p)
             p.seed+=1
         return proc
