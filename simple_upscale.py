@@ -31,4 +31,4 @@ class Script(scripts.Script):
             w = int(w * simple_upscale_factor)
             h = int(h * simple_upscale_factor)
             image = image.resize((w, h), Image.Resampling.LANCZOS)
-        images.save_image(image, p.outpath_samples, "", batch_properties['seed'], batch_properties['prompt'], opts.samples_format, info=batch_properties['info'], p=p)
+            images.save_image(image, p.outpath_samples, "", batch_properties['seed'], batch_properties['prompt'], opts.samples_format, info=batch_properties['info'], p=p)
