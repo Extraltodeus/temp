@@ -76,7 +76,7 @@ class Script(scripts.Script):
                     eta=p.eta
                     )
                 proc2 = process_images(img2img_processing)
-                if (t2iii_only_last and t2iii_reprocess == i-1) or not t2iii_only_last:
+                if (t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last:
                     image = simple_upscale(proc2.images[0],t2iii_upscale_factor)
                     images.save_image(image, p.outpath_samples, "", proc2.seed+i, proc2.prompt, opts.samples_format, info= proc2.info, p=p)
             p.seed+=1
