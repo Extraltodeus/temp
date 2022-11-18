@@ -10,13 +10,13 @@ class Script(scripts.Script):
 
     def ui(self, is_img2img):
         if is_img2img: return
-        t2iii_reprocess = gr.Slider(minimum=0, maximum=10, step=1, label='Number of img2img', value=1)
-        t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps', value=42)
-        t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=7.5)
-        t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+', value=123456)
-        t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.1, label='img2img denoising strength', value=0.7)
+        t2iii_reprocess = gr.Slider(minimum=0, maximum=10, step=1, label='Number of img2img', value=2)
+        t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps', value=30)
+        t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=14)
+        t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+', value=1000)
+        t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.1, label='img2img denoising strength', value=0.3)
         t2iii_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Stretch before save (factor)', value=2)
-        t2iii_only_last = gr.Checkbox(label='Only save the last img2img', value=False)
+        t2iii_only_last = gr.Checkbox(label='Only save the last img2img', value=True)
         return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor,t2iii_only_last]
 
     def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor,t2iii_only_last):
@@ -76,7 +76,7 @@ class Script(scripts.Script):
                     eta=p.eta
                     )
                 proc2 = process_images(img2img_processing)
-                if not t2iii_only_last and t2iii_reprocess == i-1:
+                if (t2iii_only_last and t2iii_reprocess == i-1) or not t2iii_only_last:
                     image = simple_upscale(proc2.images[0],t2iii_upscale_factor)
                     images.save_image(image, p.outpath_samples, "", proc2.seed+i, proc2.prompt, opts.samples_format, info= proc2.info, p=p)
             p.seed+=1
