@@ -14,7 +14,7 @@ class Script(scripts.Script):
         t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps', value=42)
         t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=7.5)
         t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+', value=123456)
-        t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.1, label='img2img factor', value=0.7)
+        t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.1, label='img2img denoising strength', value=0.7)
         t2iii_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Stretch before save (factor)', value=2)
         return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor]
 
