@@ -98,6 +98,6 @@ class Script(scripts.Script):
                         image = simple_upscale(proc2.images[0],t2iii_upscale_factor)
                     else:
                         image = proc2.images[0]
-                    images.save_image(image, p.outpath_samples, "", proc2.seed+i, proc2.prompt, opts.samples_format, info= proc2.info, p=p)
+                    images.save_image(image, p.outpath_samples, "", proc2.seed, proc2.prompt, opts.samples_format, info= proc2.info, p=p)
             p.seed+=1
         return proc
