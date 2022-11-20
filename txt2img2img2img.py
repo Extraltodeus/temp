@@ -18,14 +18,18 @@ class Script(scripts.Script):
         t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=12)
         t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+', value=1000)
         t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.01, label='img2img denoising strength', value=0.4)
-        t2iii_save_first = gr.Checkbox(label='Save first image', value=False)
-        t2iii_only_last = gr.Checkbox(label='Only save the last img2img', value=True)
+        with gr.Row():
+            t2iii_save_first = gr.Checkbox(label='Save first image', value=False)
+            t2iii_only_last = gr.Checkbox(label='Only save the last img2img', value=True)
+            t2iii_face_correction = gr.Checkbox(label='Face correction on img2img', value=False)
+            t2iii_face_correction_last = gr.Checkbox(label='Face correction on last img2img', value=True)
+
         t2iii_sampler = gr.Dropdown(label="Sampler", choices=img2img_samplers_names, value="DDIM")
         t2iii_upscale_x = gr.Slider(minimum=64, maximum=2048, step=64, label='img2img width (64 = no rescale)', value=64)
         t2iii_upscale_y = gr.Slider(minimum=64, maximum=2048, step=64, label='img2img height (64 = no rescale)', value=64)
-        return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_sampler,t2iii_upscale_x,t2iii_upscale_y]
+        return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_upscale_x,t2iii_upscale_y]
 
-    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_sampler,t2iii_upscale_x,t2iii_upscale_y):
+    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_upscale_x,t2iii_upscale_y):
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
         img2img_sampler_index = [i for i in range(len(img2img_samplers_names)) if img2img_samplers_names[i] == t2iii_sampler][0]
         if p.seed == -1: p.seed = randint(0,1000000000)
@@ -81,7 +85,7 @@ class Script(scripts.Script):
                     cfg_scale=t2iii_cfg_scale,
                     width=upscale_x,
                     height=upscale_y,
-                    restore_faces=p.restore_faces,
+                    restore_faces=t2iii_face_correction or (t2iii_face_correction_last and t2iii_reprocess-1 == i),
                     tiling=p.tiling,
                     do_not_save_samples=True,
                     do_not_save_grid=p.do_not_save_grid,
