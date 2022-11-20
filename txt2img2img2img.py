@@ -4,6 +4,7 @@ from PIL import Image
 import gradio as gr
 import modules.scripts as scripts
 from modules import sd_samplers
+from random import randint
 
 class Script(scripts.Script):
     def title(self):
@@ -27,6 +28,7 @@ class Script(scripts.Script):
     def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_upscale_factor,t2iii_only_last,t2iii_sampler,t2iii_upscale_x,t2iii_upscale_y):
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
         img2img_sampler_index = [i for i in range(len(img2img_samplers_names)) if img2img_samplers_names[i] == t2iii_sampler][0]
+        if p.seed == -1: p.seed = randint(0,1000000000)
 
         def simple_upscale(img, factor):
             w, h = img.size
@@ -70,7 +72,7 @@ class Script(scripts.Script):
                     outpath_grids=p.outpath_grids,
                     prompt=proc.info.split("\nNegative prompt")[0],
                     styles=p.styles,
-                    seed=proc_temp.seed+t2iii_seed_shift-1,
+                    seed=proc_temp.seed+t2iii_seed_shift,
                     subseed=proc_temp.subseed,
                     subseed_strength=p.subseed_strength,
                     seed_resize_from_h=p.seed_resize_from_h,
