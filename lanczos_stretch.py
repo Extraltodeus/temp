@@ -27,8 +27,11 @@ class Script(scripts.Script):
       
     on_before_image_saved(bis(ImageSaveParams))
     def bis():
-        ImageSaveParams
-        image, p, filename, pnginfo
+        image = ImageSaveParams['image']
+        p = ImageSaveParams['p']
+        filename = ImageSaveParams['filename']
+        pnginfo = ImageSaveParams['pnginfo']
+#         image, p, filename, pnginfo
         if p.simple_upscale_factor > 1:
             w, h = image.size
             w = int(w * p.simple_upscale_factor)
