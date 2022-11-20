@@ -72,7 +72,7 @@ class Script(scripts.Script):
                     outpath_grids=p.outpath_grids,
                     prompt=proc.info.split("\nNegative prompt")[0],
                     styles=p.styles,
-                    seed=proc_temp.seed+t2iii_seed_shift,
+                    seed=p.seed+t2iii_seed_shift,
                     subseed=proc_temp.subseed,
                     subseed_strength=p.subseed_strength,
                     seed_resize_from_h=p.seed_resize_from_h,
