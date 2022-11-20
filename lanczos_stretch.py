@@ -6,6 +6,7 @@ import traceback
 import random
 
 import modules.scripts as scripts
+import modules.script_callbacks as script_callbacks
 import modules.images as images
 import gradio as gr
 
@@ -25,13 +26,9 @@ class Script(scripts.Script):
         simple_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
         return [simple_upscale_factor]
       
-    on_before_image_saved(bis(ImageSaveParams))
-    def bis():
-        image = ImageSaveParams['image']
-        p = ImageSaveParams['p']
-        filename = ImageSaveParams['filename']
-        pnginfo = ImageSaveParams['pnginfo']
-#         image, p, filename, pnginfo
+    script_callbacks.on_before_image_saved(bis)
+    
+    def bis(self, image, p, filename, pnginfo):
         if p.simple_upscale_factor > 1:
             w, h = image.size
             w = int(w * p.simple_upscale_factor)
