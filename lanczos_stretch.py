@@ -25,7 +25,10 @@ class Script(scripts.Script):
         simple_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
         return [simple_upscale_factor]
       
-    def on_before_image_saved(self, image, p, filename, pnginfo):
+    on_before_image_saved(bis(ImageSaveParams))
+    def bis():
+        ImageSaveParams
+        image, p, filename, pnginfo
         if p.simple_upscale_factor > 1:
             w, h = image.size
             w = int(w * p.simple_upscale_factor)
