@@ -6,7 +6,7 @@ import traceback
 import random
 
 import modules.scripts as scripts
-import modules.script_callbacks as script_callbacks
+from   modules.script_callbacks import add_callback, on_before_image_saved
 import modules.images as images
 import gradio as gr
 
@@ -18,7 +18,7 @@ class Script(scripts.Script):
     alwayson = True
     
     def __init__(self):
-        script_callbacks.add_callback(on_image_saved,bis)
+        add_callback(on_before_image_saved,bis)
     
     def title(self):
         return "Lanczos simple upscale"
