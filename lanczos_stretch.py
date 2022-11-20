@@ -16,6 +16,10 @@ from modules.shared import opts, cmd_opts, state
 
 class Script(scripts.Script):
     alwayson = True
+    
+    def __init__(self):
+        script_callbacks.add_callback(on_image_saved,bis)
+    
     def title(self):
         return "Lanczos simple upscale"
       
@@ -25,9 +29,7 @@ class Script(scripts.Script):
     def ui(self, is_img2img):
         simple_upscale_factor = gr.Slider(minimum=1, maximum=4, step=0.1, label='Upscale factor', value=2)
         return [simple_upscale_factor]
-      
-    script_callbacks.on_before_image_saved(bis)
-    
+          
     def bis(self, image, p, filename, pnginfo):
         if p.simple_upscale_factor > 1:
             w, h = image.size
