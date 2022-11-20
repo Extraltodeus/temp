@@ -18,7 +18,7 @@ class Script(scripts.Script):
     alwayson = True
     
     def __init__(self):
-        add_callback(on_before_image_saved,bis)
+        add_callback(on_before_image_saved,self.bis)
     
     def title(self):
         return "Lanczos simple upscale"
