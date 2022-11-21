@@ -20,20 +20,22 @@ class Script(scripts.Script):
         t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.01, label='img2img denoising strength', value=0.4)
         with gr.Row():
             t2iii_save_first = gr.Checkbox(label='Save first image', value=False)
-            t2iii_only_last = gr.Checkbox(label='Only save the last img2img', value=True)
-            t2iii_face_correction = gr.Checkbox(label='Face correction on img2img', value=False)
-            t2iii_face_correction_last = gr.Checkbox(label='Face correction on last img2img', value=True)
+            t2iii_only_last = gr.Checkbox(label='Only save last img2img', value=True)
+            t2iii_face_correction = gr.Checkbox(label='Face correction on all', value=False)
+            t2iii_face_correction_last = gr.Checkbox(label='Face correction on last', value=True)
 
         t2iii_sampler = gr.Dropdown(label="Sampler", choices=img2img_samplers_names, value="DDIM")
+        t2iii_clip    = gr.Slider(minimum=0, maximum=12, step=1, label='change clip for img2img (0 = disabled)', value=0)
         t2iii_upscale_x = gr.Slider(minimum=64, maximum=2048, step=64, label='img2img width (64 = no rescale)', value=64)
         t2iii_upscale_y = gr.Slider(minimum=64, maximum=2048, step=64, label='img2img height (64 = no rescale)', value=64)
-        return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_upscale_x,t2iii_upscale_y]
+        return [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_upscale_x,t2iii_upscale_y]
 
-    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_upscale_x,t2iii_upscale_y):
+    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_upscale_x,t2iii_upscale_y):
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
         img2img_sampler_index = [i for i in range(len(img2img_samplers_names)) if img2img_samplers_names[i] == t2iii_sampler][0]
         if p.seed == -1: p.seed = randint(0,1000000000)
 
+        initial_CLIP = opts.data["CLIP_stop_at_last_layers"]
         p.do_not_save_samples = not t2iii_save_first
 
         if t2iii_upscale_x > 64:
@@ -50,8 +52,12 @@ class Script(scripts.Script):
             p.n_iter=1
             proc = process_images(p)
             basename = ""
+            if t2iii_clip > 0:
+                opts.data["CLIP_stop_at_last_layers"] = t2iii_clip
             for i in range(t2iii_reprocess):
                 if state.interrupted:
+                    if t2iii_clip > 0:
+                        opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
                     break
                 if i == 0:
                     proc_temp = proc
@@ -99,4 +105,6 @@ class Script(scripts.Script):
                     image = proc2.images[0]
                     images.save_image(image, p.outpath_samples, "", proc2.seed, proc2.prompt, opts.samples_format, info= proc2.info, p=p)
             p.seed+=1
+        if t2iii_clip > 0:
+            opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
         return proc
