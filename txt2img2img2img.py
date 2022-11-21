@@ -6,7 +6,7 @@ import modules.scripts as scripts
 from modules import sd_samplers
 from random import randint
 from skimage.util import random_noise
-
+import numpy as np
 
 class Script(scripts.Script):
     def title(self):
