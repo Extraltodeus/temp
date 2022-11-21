@@ -34,9 +34,12 @@ class Script(scripts.Script):
         return [simple_upscale_factor]
 
     def bis(self, params):
-        if params.p.simple_upscale_factor > 1:
-            w, h = params.image.size
-            w = int(w * params.p.simple_upscale_factor)
-            h = int(h * params.p.simple_upscale_factor)
-            image = params.image.resize((w, h), Image.Resampling.LANCZOS)
-            params.image = image
+        try:
+            if params.p.simple_upscale_factor > 1:
+                w, h = params.image.size
+                w = int(w * params.p.simple_upscale_factor)
+                h = int(h * params.p.simple_upscale_factor)
+                image = params.image.resize((w, h), Image.Resampling.LANCZOS)
+                params.image = image
+        except Exception:
+            pass
