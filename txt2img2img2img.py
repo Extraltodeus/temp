@@ -35,9 +35,9 @@ class Script(scripts.Script):
 
     def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_noise,t2iii_upscale_x,t2iii_upscale_y):
 
-        def add_noise_to_image(img,seed):
+        def add_noise_to_image(img,seed,t2iii_noise):
             img = np.array(img)
-            img = random_noise(img, mode='gaussian', seed=proc.seed, clip=True)
+            img = random_noise(img, mode='gaussian', seed=proc.seed, clip=True, var=t2iii_noise)
             img = np.array(255*img, dtype = 'uint8')
             img = Image.fromarray(np.array(img))
             return img
@@ -75,7 +75,7 @@ class Script(scripts.Script):
                 else:
                     proc_temp = proc2
                 if t2iii_noise > 0 :
-                    proc_temp.images[0] = add_noise_to_image(proc_temp.images[0],p.seed)
+                    proc_temp.images[0] = add_noise_to_image(proc_temp.images[0],p.seed,t2iii_noise)
                 img2img_processing = StableDiffusionProcessingImg2Img(
                     init_images=proc_temp.images,
                     resize_mode=0,
