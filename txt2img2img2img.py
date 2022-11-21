@@ -61,11 +61,13 @@ class Script(scripts.Script):
         n_iter=p.n_iter
         for j in range(n_iter):
             p.n_iter=1
+            if t2iii_clip > 0:
+                opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
             proc = process_images(p)
             basename = ""
-            if t2iii_clip > 0:
-                opts.data["CLIP_stop_at_last_layers"] = t2iii_clip
             for i in range(t2iii_reprocess):
+                if t2iii_clip > 0:
+                    opts.data["CLIP_stop_at_last_layers"] = t2iii_clip
                 if state.interrupted:
                     if t2iii_clip > 0:
                         opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
