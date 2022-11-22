@@ -21,7 +21,7 @@ class Script(scripts.Script):
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
         # foreground UI
         with gr.Box():
-            foregen_prompt      = gr.Textbox(label="Foreground prompt", lines=2, max_lines=2000)
+            foregen_prompt      = gr.Textbox(label="Foreground prompt", lines=5, max_lines=2000)
             foregen_iter        = gr.Slider(minimum=1, maximum=10, step=1, label='Number of foreground images', value=5)
             foregen_steps       = gr.Slider(minimum=1, maximum=120, step=1, label='foreground steps', value=24)
             foregen_cfg_scale   = gr.Slider(minimum=1, maximum=30, step=0.1, label='foreground cfg scale', value=12.5)
@@ -191,6 +191,8 @@ class Script(scripts.Script):
             proc = process_images(p)
             background_image = proc.images[0]
 
+            foregen_prompts = foregen_prompt.splitlines()
+
             foregrounds = []
             if foregen_clip > 0:
                 opts.data["CLIP_stop_at_last_layers"] = foregen_clip
@@ -199,7 +201,7 @@ class Script(scripts.Script):
                     if foregen_clip > 0:
                         opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
                     break
-                p.prompt    = foregen_prompt
+                p.prompt    = foregen_prompts[i] if len(foregen_prompts) > 1 else foregen_prompt
                 p.seed      = p.seed + foregen_seed_shift
                 p.subseed   = p.subseed + 1 if p.subseed_strength > 0 else p.subseed
                 p.cfg_scale = foregen_cfg_scale
