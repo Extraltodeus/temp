@@ -1,4 +1,4 @@
-from modules.processing import Processed, StableDiffusionProcessingImg2Img, process_images, images
+from modules.processing import Processed, StableDiffusionProcessingImg2Img, process_images, images, fix_seed
 from modules.shared import opts, cmd_opts, state
 from PIL import Image, ImageOps
 from math import ceil
@@ -17,6 +17,7 @@ class Script(scripts.Script):
 
     def ui(self, is_img2img):
         if is_img2img: return
+        txt2img_samplers_names = [s.name for s in sd_samplers.samplers]
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
         # foreground UI
         with gr.Box():
@@ -25,7 +26,7 @@ class Script(scripts.Script):
             foregen_steps       = gr.Slider(minimum=1, maximum=120, step=1, label='foreground steps', value=24)
             foregen_cfg_scale   = gr.Slider(minimum=1, maximum=30, step=0.1, label='foreground cfg scale', value=12.5)
             foregen_seed_shift  = gr.Slider(minimum=0, maximum=1000, step=1, label='foreground new seed+', value=1000)
-            foregen_sampler     = gr.Dropdown(label="foreground sampler", choices=img2img_samplers_names, value="DDIM")
+            foregen_sampler     = gr.Dropdown(label="foreground sampler", choices=txt2img_samplers_names, value="DDIM")
             foregen_clip        = gr.Slider(minimum=0, maximum=12, step=1, label='change clip for foreground (0 = no interaction)', value=0)
             with gr.Row():
                 foregen_size_x  = gr.Slider(minimum=64, maximum=2048, step=64, label='foreground width (64 = same as background)', value=64)
@@ -139,11 +140,13 @@ class Script(scripts.Script):
             image.paste(foreground, (x_shift,background.size[1]-foreground.size[1]+y_shift), foreground)
             return image
 
-        img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
-        img2img_sampler_index = [i for i in range(len(img2img_samplers_names)) if img2img_samplers_names[i] == foregen_sampler][0]
-        foregen_blend_sampler_index = [i for i in range(len(img2img_samplers_names)) if img2img_samplers_names[i] == foregen_blend_sampler][0]
+        # txt2img_samplers_names = [s.name for s in sd_samplers.samplers]
+        # img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
+        # img2img_sampler_index = [i for i in range(len(img2img_samplers_names)) if img2img_samplers_names[i] == foregen_sampler][0]
+        # foregen_blend_sampler_index = [i for i in range(len(txt2img_samplers_names)) if txt2img_samplers_names[i] == foregen_blend_sampler][0]
 
-        if p.seed == -1: p.seed = randint(0,1000000000)
+        fix_seed(p)
+        # if p.seed == -1: p.seed = randint(0,1000000000)
 
         p.do_not_save_samples = not foregen_save_background
 
@@ -152,6 +155,8 @@ class Script(scripts.Script):
         foregen_blend_size_x = p.width  if foregen_blend_size_x == 64 else foregen_blend_size_x
         foregen_blend_size_y = p.height if foregen_blend_size_y == 64 else foregen_blend_size_y
 
+        o_sampler_name = p.sampler_name
+        o_seed      = p.seed
         o_prompt    = p.prompt
         o_cfg_scale = p.cfg_scale
         o_steps     = p.steps
@@ -174,6 +179,7 @@ class Script(scripts.Script):
             if foregen_clip > 0:
                 opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
             p.prompt = o_prompt
+            p.sampler_name = o_sampler_name
             p.cfg_scale = o_cfg_scale
             p.steps = o_steps
             p.do_not_save_samples = o_do_not_save_samples
@@ -193,19 +199,20 @@ class Script(scripts.Script):
                     if foregen_clip > 0:
                         opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
                     break
-                p_bis = p
-                p_bis.prompt    = foregen_prompt
-                p_bis.seed      = p.seed+foregen_seed_shift*(i+1)
-                p_bis.cfg_scale = foregen_cfg_scale
-                p_bis.steps     = foregen_steps
-                p_bis.do_not_save_samples = not foregen_save_all
-                p_bis.width     = foregen_size_x
-                p_bis.height    = foregen_size_y
-                p_bis.denoising_strength  = None
-                p_bis.firstphase_width    = None
-                p_bis.firstphase_height   = None
-                foregen_proc    = process_images(p_bis)
-                foregrounds.append(foregen_proc.images[0])
+                p.prompt    = foregen_prompt
+                p.seed      = p.seed + foregen_seed_shift
+                p.subseed   = p.subseed + 1 if p.subseed_strength > 0 else p.subseed
+                p.cfg_scale = foregen_cfg_scale
+                p.steps     = foregen_steps
+                p.do_not_save_samples = not foregen_save_all
+                p.sampler_name = foregen_sampler
+                p.width     = foregen_size_x
+                p.height    = foregen_size_y
+                p.denoising_strength  = None
+                p.firstphase_width    = None
+                p.firstphase_height   = None
+                proc = process_images(p)
+                foregrounds.append(proc.images[0])
 
             if foregen_clip > 0:
                 opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
@@ -217,8 +224,6 @@ class Script(scripts.Script):
                 foreground_image      = foregrounds[f]
                 # gen depth map
                 foreground_image_mask = sdmg.calculate_depth_map_for_waifus(foreground_image)
-                # COMMENTED FOR DEBUGGING
-                # foreground_image_mask = foreground_image
                 # cut depth
                 foreground_image      = cut_depth_mask(foreground_image,foreground_image_mask,foregen_treshold)
                 # paste foregrounds onto background
@@ -245,7 +250,7 @@ class Script(scripts.Script):
                 subseed_strength=p.subseed_strength,
                 seed_resize_from_h=p.seed_resize_from_h,
                 seed_resize_from_w=p.seed_resize_from_w,
-                sampler_index=foregen_blend_sampler_index,
+                sampler_name=foregen_blend_sampler,
                 batch_size=p.batch_size,
                 n_iter=p.n_iter,
                 steps=foregen_blend_steps,
@@ -265,7 +270,3 @@ class Script(scripts.Script):
 
             p.seed+=1
         return final_blend
-        # except Exception as e:
-        #     print(e)
-        # finally:
-        #     opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
