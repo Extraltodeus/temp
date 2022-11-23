@@ -6,7 +6,8 @@ import cv2
 
 import modules.scripts as scripts
 from modules import sd_samplers
-from random import randint
+from random import randint, shuffle
+import random
 from skimage.util import random_noise
 import gradio as gr
 import numpy as np
@@ -22,37 +23,38 @@ class Script(scripts.Script):
 
         # foreground UI
         with gr.Box():
-            foregen_prompt      = gr.Textbox(label="Foreground prompt", lines=5, max_lines=2000)
-            foregen_iter        = gr.Slider(minimum=1, maximum=10, step=1, label='Number of foreground images', value=5)
-            foregen_steps       = gr.Slider(minimum=1, maximum=120, step=1, label='foreground steps', value=24)
-            foregen_cfg_scale   = gr.Slider(minimum=1, maximum=30, step=0.1, label='foreground cfg scale', value=12.5)
-            foregen_seed_shift  = gr.Slider(minimum=0, maximum=1000, step=1, label='foreground new seed+', value=1000)
+            foregen_prompt      = gr.Textbox(label="Foreground prompt  ", lines=5, max_lines=2000)
+            foregen_iter        = gr.Slider(minimum=1, maximum=10, step=1, label='Number of foreground images  ', value=5)
+            foregen_steps       = gr.Slider(minimum=1, maximum=120, step=1, label='foreground steps  ', value=24)
+            foregen_cfg_scale   = gr.Slider(minimum=1, maximum=30, step=0.1, label='foreground cfg scale  ', value=12.5)
+            foregen_seed_shift  = gr.Slider(minimum=0, maximum=1000, step=1, label='foreground new seed+  ', value=1000)
             foregen_sampler     = gr.Dropdown(label="foreground sampler", choices=txt2img_samplers_names, value="DDIM")
-            foregen_clip        = gr.Slider(minimum=0, maximum=12, step=1, label='change clip for foreground (0 = no interaction)', value=0)
+            foregen_clip        = gr.Slider(minimum=0, maximum=12, step=1, label='change clip for foreground (0 = no interaction)  ', value=0)
             with gr.Row():
-                foregen_size_x  = gr.Slider(minimum=64, maximum=2048, step=64, label='foreground width (64 = same as background)', value=64)
-                foregen_size_y  = gr.Slider(minimum=64, maximum=2048, step=64, label='foreground height (64 = same as background)', value=64)
+                foregen_size_x  = gr.Slider(minimum=64, maximum=2048, step=64, label='foreground width (64 = same as background)  ', value=64)
+                foregen_size_y  = gr.Slider(minimum=64, maximum=2048, step=64, label='foreground height (64 = same as background)  ', value=64)
 
         # blend UI
         with gr.Box():
             foregen_blend_prompt             = gr.Textbox(label="final blend prompt", lines=2, max_lines=2000)
-            foregen_blend_steps              = gr.Slider(minimum=1, maximum=120, step=1, label='blend steps ', value=64)
-            foregen_blend_cfg_scale          = gr.Slider(minimum=1, maximum=30, step=0.1, label='blend cfg scale', value=7.5)
-            foregen_blend_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.01, label='blend denoising strength ', value=0.42)
+            foregen_blend_steps              = gr.Slider(minimum=1, maximum=120, step=1, label='blend steps   ', value=64)
+            foregen_blend_cfg_scale          = gr.Slider(minimum=1, maximum=30, step=0.1, label='blend cfg scale  ', value=7.5)
+            foregen_blend_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.01, label='blend denoising strength   ', value=0.42)
             foregen_blend_sampler            = gr.Dropdown(label="blend sampler", choices=img2img_samplers_names, value="DDIM")
             with gr.Row():
-                foregen_blend_size_x  = gr.Slider(minimum=64, maximum=2048, step=64, label='blend width   (64 = same size as background)', value=64)
-                foregen_blend_size_y  = gr.Slider(minimum=64, maximum=2048, step=64, label='blend height  (64 = same size as background)', value=64)
+                foregen_blend_size_x  = gr.Slider(minimum=64, maximum=2048, step=64, label='blend width   (64 = same size as background) ', value=64)
+                foregen_blend_size_y  = gr.Slider(minimum=64, maximum=2048, step=64, label='blend height  (64 = same size as background) ', value=64)
 
         # Misc options
-        foregen_x_shift  = gr.Slider(minimum=0, maximum=2, step=0.1, label='Foreground distance from center multiplier', value=1)
-        foregen_y_shift  = gr.Slider(minimum=0, maximum=100, step=1, label='Foreground Y shift (far from center = lower)', value=0)
-        foregen_treshold = gr.Slider(minimum=0, maximum=255, step=1, label='Foreground depth cut treshold    ', value=92)
-
+        foregen_x_shift  = gr.Slider(minimum=0, maximum=2, step=0.01, label='Foreground distance from center multiplier  ', value=1)
+        foregen_y_shift  = gr.Slider(minimum=0, maximum=100, step=1, label='Foreground Y shift (far from center = lower) ', value=0)
+        foregen_treshold = gr.Slider(minimum=0, maximum=255, step=1, label='Foreground depth cut treshold     ', value=92)
         with gr.Row():
-            foregen_save_background = gr.Checkbox(label='Save background', value=True)
-            foregen_save_all        = gr.Checkbox(label='Save all foreground images', value=True)
-            foregen_face_correction = gr.Checkbox(label='Face correction', value=True)
+            foregen_save_background = gr.Checkbox(label='Save background ', value=True)
+            foregen_save_all        = gr.Checkbox(label='Save all foreground images ', value=True)
+            foregen_face_correction = gr.Checkbox(label='Face correction ', value=True)
+            foregen_random_superposition = gr.Checkbox(label='Random superposition ', value=False)
+            foregen_reverse_order = gr.Checkbox(label='Reverse order ', value=False)
         return    [foregen_prompt,
                     foregen_iter,
                     foregen_steps,
@@ -74,7 +76,9 @@ class Script(scripts.Script):
                     foregen_treshold,
                     foregen_save_background,
                     foregen_save_all,
-                    foregen_face_correction]
+                    foregen_face_correction,
+                    foregen_random_superposition,
+                    foregen_reverse_order]
 
 
 
@@ -100,7 +104,9 @@ class Script(scripts.Script):
                     foregen_treshold,
                     foregen_save_background,
                     foregen_save_all,
-                    foregen_face_correction
+                    foregen_face_correction,
+                    foregen_random_superposition,
+                    foregen_reverse_order
                     ):
         initial_CLIP = opts.data["CLIP_stop_at_last_layers"]
         import scripts.simple_depthmap as sdmg
@@ -121,9 +127,10 @@ class Script(scripts.Script):
             mask_img.putdata(newData)
             return mask_img
 
-        def paste_foreground(background,foreground,index,total_foreground,x_shift,y_shift):
+        def paste_foreground(background,foreground,index,total_foreground,x_shift,y_shift,foregen_reverse_order):
             background = background.convert("RGBA")
-            index = total_foreground-index-1
+            if not foregen_reverse_order:
+                index = total_foreground-index-1
             image = Image.new("RGBA", background.size)
             image.paste(background, (0,0), background)
             alternator = -1 if index % 2 == 0 else 1
@@ -218,6 +225,11 @@ class Script(scripts.Script):
                 background_image = background_image.resize((foregen_blend_size_x, foregen_blend_size_y), Image.Resampling.LANCZOS)
 
             # cut depthmaps and stick foreground on the background
+            random.seed(p.seed)
+            random_order = [k for k in range(foregen_iter)]
+            if foregen_random_superposition :
+                shuffle(random_order)
+
             for f in range(foregen_iter):
                 foreground_image      = foregrounds[f]
                 # gen depth map
@@ -225,7 +237,7 @@ class Script(scripts.Script):
                 # cut depth
                 foreground_image      = cut_depth_mask(foreground_image,foreground_image_mask,foregen_treshold)
                 # paste foregrounds onto background
-                background_image      = paste_foreground(background_image,foreground_image,f,foregen_iter,foregen_x_shift,foregen_y_shift)
+                background_image      = paste_foreground(background_image,foreground_image,random_order[f],foregen_iter,foregen_x_shift,foregen_y_shift,foregen_reverse_order)
 
             # final blend
             img2img_processing = StableDiffusionProcessingImg2Img(
