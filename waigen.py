@@ -19,6 +19,7 @@ class Script(scripts.Script):
         if is_img2img: return
         txt2img_samplers_names = [s.name for s in sd_samplers.samplers]
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
+
         # foreground UI
         with gr.Box():
             foregen_prompt      = gr.Textbox(label="Foreground prompt", lines=5, max_lines=2000)
@@ -104,13 +105,12 @@ class Script(scripts.Script):
         initial_CLIP = opts.data["CLIP_stop_at_last_layers"]
         import scripts.simple_depthmap as sdmg
         sdmg = sdmg.SimpleDepthMapGenerator() #import midas
-        # try:
+
         def cut_depth_mask(img,mask_img,foregen_treshold):
             img = img.convert("RGBA")
             mask_img = mask_img.convert("RGBA")
             mask_datas = mask_img.getdata()
             datas = img.getdata()
-
             treshold = foregen_treshold
             newData = []
             for i in range(len(mask_datas)):
@@ -140,14 +140,7 @@ class Script(scripts.Script):
             image.paste(foreground, (x_shift,background.size[1]-foreground.size[1]+y_shift), foreground)
             return image
 
-        # txt2img_samplers_names = [s.name for s in sd_samplers.samplers]
-        # img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
-        # img2img_sampler_index = [i for i in range(len(img2img_samplers_names)) if img2img_samplers_names[i] == foregen_sampler][0]
-        # foregen_blend_sampler_index = [i for i in range(len(txt2img_samplers_names)) if txt2img_samplers_names[i] == foregen_blend_sampler][0]
-
         fix_seed(p)
-        # if p.seed == -1: p.seed = randint(0,1000000000)
-
         p.do_not_save_samples = not foregen_save_background
 
         foregen_size_x = p.width  if foregen_size_x == 64 else foregen_size_x
@@ -191,8 +184,8 @@ class Script(scripts.Script):
             proc = process_images(p)
             background_image = proc.images[0]
 
+            # foregrounds processing
             foregen_prompts = foregen_prompt.splitlines()
-
             foregrounds = []
             if foregen_clip > 0:
                 opts.data["CLIP_stop_at_last_layers"] = foregen_clip
@@ -216,12 +209,15 @@ class Script(scripts.Script):
                 proc = process_images(p)
                 foregrounds.append(proc.images[0])
 
+            # put back clip to original settings before img2img final blend
             if foregen_clip > 0:
                 opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
 
+            #stretch background to final blend if the final blend as a specific size set
             if o_width != foregen_blend_size_x or o_height != foregen_blend_size_y :
                 background_image = background_image.resize((foregen_blend_size_x, foregen_blend_size_y), Image.Resampling.LANCZOS)
 
+            # cut depthmaps and stick foreground on the background
             for f in range(foregen_iter):
                 foreground_image      = foregrounds[f]
                 # gen depth map
