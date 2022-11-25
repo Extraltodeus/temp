@@ -56,7 +56,4 @@ class Script(scripts.Script):
             proc = process_images(p)
         except Exception as e:
             raise
-        finally:
-            sdmg.del_model()
-
         return proc
