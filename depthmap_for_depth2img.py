@@ -16,7 +16,7 @@ from repositories.midas.midas.transforms import Resize, NormalizeImage, PrepareF
 import numpy as np
 
 class SimpleDepthMapGenerator(object):
-    def __init__(self):
+    def __init__(self,img_x,img_y):
         super(SimpleDepthMapGenerator, self).__init__()
 
         def download_file(filename, url):
@@ -51,8 +51,8 @@ class SimpleDepthMapGenerator(object):
         self.transform = Compose(
             [
                 Resize(
-                    p.width,
-                    p.height,
+                    img_x,
+                    img_y,
                     resize_target=None,
                     keep_aspect_ratio=True,
                     ensure_multiple_of=32,
