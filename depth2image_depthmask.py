@@ -48,12 +48,8 @@ class Script(scripts.Script):
 
         sdmg = module_from_file("depthmap_for_depth2img",'extensions/multi-subject-render/scripts/depthmap_for_depth2img.py')
         sdmg = sdmg.SimpleDepthMapGenerator() #import midas
-
-        try:
-            d_m = sdmg.calculate_depth_maps(p.init_images[0],p.width,p.height)
-            d_m = cut_depth_mask(d_m,save_depthmap)
-            p.image_mask = d_m
-            proc = process_images(p)
-        except Exception as e:
-            raise
+        d_m = sdmg.calculate_depth_maps(p.init_images[0],p.width,p.height)
+        d_m = cut_depth_mask(d_m,save_depthmap)
+        p.image_mask = d_m
+        proc = process_images(p)
         return proc
