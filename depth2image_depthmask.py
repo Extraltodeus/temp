@@ -47,7 +47,7 @@ class Script(scripts.Script):
             return img
 
         sdmg = module_from_file("depthmap_for_depth2img",'extensions/multi-subject-render/scripts/depthmap_for_depth2img.py')
-        sdmg = sdmg.SimpleDepthMapGenerator() #import midas
+        sdmg = sdmg.SimpleDepthMapGenerator(p.width,p.height) #import midas
 
         try:
             d_m = sdmg.calculate_depth_maps(p.init_images[0])
@@ -58,5 +58,5 @@ class Script(scripts.Script):
             raise
         finally:
             sdmg.del_model()
-            
+
         return proc
