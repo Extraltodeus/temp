@@ -16,78 +16,71 @@ from repositories.midas.midas.transforms import Resize, NormalizeImage, PrepareF
 import numpy as np
 
 class SimpleDepthMapGenerator(object):
-    def __init__(self,img_x,img_y):
-        super(SimpleDepthMapGenerator, self).__init__()
-
-        def download_file(filename, url):
-            print("Downloading midas model weights to %s" % filename)
-            with open(filename, 'wb') as fout:
-                response = requests.get(url, stream=True)
-                response.raise_for_status()
-                # Write response data to file
-                for block in response.iter_content(4096):
-                    fout.write(block)
-
-        # model path and name
-        model_dir = "./models/midas"
-        # create path to model if not present
-        os.makedirs(model_dir, exist_ok=True)
-        print("Loading midas model weights ..")
-        model_path = f"{model_dir}/dpt_hybrid-midas-501f0c75.pt"
-        print(model_path)
-        if not os.path.exists(model_path):
-            download_file(model_path,"https://github.com/intel-isl/DPT/releases/download/1_0/dpt_hybrid-midas-501f0c75.pt")
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        print("device: %s" % self.device)
-        self.model = DPTDepthModel(
-            path=model_path,
-            backbone="vitb_rn50_384",
-            non_negative=True,
-        )
-        net_w, net_h = 384, 384
-        resize_mode="minimal"
-        normalization = NormalizeImage(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
-        # init transform
-        self.transform = Compose(
-            [
-                Resize(
-                    img_x,
-                    img_y,
-                    resize_target=None,
-                    keep_aspect_ratio=True,
-                    ensure_multiple_of=32,
-                    resize_method=resize_mode,
-                    image_interpolation_method=cv2.INTER_CUBIC,
-                ),
-                normalization,
-                PrepareForNet(),
-            ]
-        )
-        self.model.eval()
-        # optimize
-        if self.device == torch.device("cuda"):
-            self.model = self.model.to(memory_format=torch.channels_last)
-            if not cmd_opts.no_half:
-                self.model = self.model.half()
-        self.model.to(self.device)
-
-
-    def del_model(self):
-        del self.model
-
-    def calculate_depth_maps(self,image):
+    def calculate_depth_maps(self,image,img_x,img_y):
         try:
+            def download_file(filename, url):
+                print("Downloading midas model weights to %s" % filename)
+                with open(filename, 'wb') as fout:
+                    response = requests.get(url, stream=True)
+                    response.raise_for_status()
+                    # Write response data to file
+                    for block in response.iter_content(4096):
+                        fout.write(block)
+
+            # model path and name
+            model_dir = "./models/midas"
+            # create path to model if not present
+            os.makedirs(model_dir, exist_ok=True)
+            print("Loading midas model weights ..")
+            model_path = f"{model_dir}/dpt_hybrid-midas-501f0c75.pt"
+            print(model_path)
+            if not os.path.exists(model_path):
+                download_file(model_path,"https://github.com/intel-isl/DPT/releases/download/1_0/dpt_hybrid-midas-501f0c75.pt")
+            device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+            print("device: %s" % device)
+            model = DPTDepthModel(
+                path=model_path,
+                backbone="vitb_rn50_384",
+                non_negative=True,
+            )
+            net_w, net_h = 384, 384
+            resize_mode="minimal"
+            normalization = NormalizeImage(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5])
+            # init transform
+            transform = Compose(
+                [
+                    Resize(
+                        img_x,
+                        img_y,
+                        resize_target=None,
+                        keep_aspect_ratio=True,
+                        ensure_multiple_of=32,
+                        resize_method=resize_mode,
+                        image_interpolation_method=cv2.INTER_CUBIC,
+                    ),
+                    normalization,
+                    PrepareForNet(),
+                ]
+            )
+            model.eval()
+            # optimize
+            if device == torch.device("cuda"):
+                model = model.to(memory_format=torch.channels_last)
+                if not cmd_opts.no_half:
+                    model = model.half()
+            model.to(device)
+
             img = cv2.cvtColor(np.asarray(image), cv2.COLOR_BGR2RGB) / 255.0
-            img_input = self.transform({"image": img})["image"]
-            precision_scope = torch.autocast if shared.cmd_opts.precision == "autocast" and self.device == torch.device("cuda") else contextlib.nullcontext
+            img_input = transform({"image": img})["image"]
+            precision_scope = torch.autocast if shared.cmd_opts.precision == "autocast" and device == torch.device("cuda") else contextlib.nullcontext
             # compute
             with torch.no_grad(), precision_scope("cuda"):
-                sample = torch.from_numpy(img_input).to(self.device).unsqueeze(0)
-                if self.device == torch.device("cuda"):
+                sample = torch.from_numpy(img_input).to(device).unsqueeze(0)
+                if device == torch.device("cuda"):
                     sample = sample.to(memory_format=torch.channels_last)
                     if not cmd_opts.no_half:
                         sample = sample.half()
-                prediction = self.model.forward(sample)
+                prediction = model.forward(sample)
                 prediction = (
                     torch.nn.functional.interpolate(
                         prediction.unsqueeze(1),
@@ -126,4 +119,5 @@ class SimpleDepthMapGenerator(object):
             return img
         except Exception as e:
             print(e)
-            self.del_model()
+        finally:
+            del model
