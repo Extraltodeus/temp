@@ -63,7 +63,7 @@ class Script(scripts.Script):
 
 OPEN = '{'
 CLOSE = '}'
-SEPARATE = '#'
+SEPARATE = '&'
 MARK = '@'
 REAL_MARK = ':'
 
