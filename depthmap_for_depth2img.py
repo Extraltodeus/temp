@@ -70,7 +70,7 @@ class SimpleDepthMapGenerator(object):
             if not cmd_opts.no_half:
                 self.model = self.model.half()
         self.model.to(self.device)
-        precision_scope = torch.autocast if shared.cmd_opts.precision == "autocast" and self.device == torch.device("cuda") else contextlib.nullcontext
+
 
     def del_model(self):
         del self.model
@@ -79,7 +79,7 @@ class SimpleDepthMapGenerator(object):
         try:
             img = cv2.cvtColor(np.asarray(image), cv2.COLOR_BGR2RGB) / 255.0
             img_input = self.transform({"image": img})["image"]
-
+            precision_scope = torch.autocast if shared.cmd_opts.precision == "autocast" and self.device == torch.device("cuda") else contextlib.nullcontext
             # compute
             with torch.no_grad(), precision_scope("cuda"):
                 sample = torch.from_numpy(img_input).to(self.device).unsqueeze(0)
