@@ -19,7 +19,7 @@ class Script(scripts.Script):
         t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps', value=30)
         t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=12)
         t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+', value=1000)
-        t2iii_denoising_strength = gr.Slider(minimum=0.1, maximum=1, step=0.01, label='img2img denoising strength', value=0.4)
+        t2iii_denoising_strength = gr.Slider(minimum=0, maximum=1, step=0.01, label='img2img denoising strength ', value=0.4)
         with gr.Row():
             t2iii_save_first = gr.Checkbox(label='Save first image', value=False)
             t2iii_only_last = gr.Checkbox(label='Only save last img2img', value=True)
