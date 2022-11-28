@@ -109,7 +109,7 @@ class Script(scripts.Script):
                     height=upscale_y,
                     restore_faces=t2iii_face_correction or (t2iii_face_correction_last and t2iii_reprocess-1 == i),
                     tiling=p.tiling,
-                    do_not_save_samples=(t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last,
+                    do_not_save_samples=not ((t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last),
                     do_not_save_grid=p.do_not_save_grid,
                     extra_generation_params=p.extra_generation_params,
                     overlay_images=p.overlay_images,
