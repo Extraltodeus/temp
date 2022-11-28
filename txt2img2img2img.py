@@ -117,7 +117,8 @@ class Script(scripts.Script):
                     eta=p.eta
                     )
                 proc2 = process_images(img2img_processing)
-            p.seed+=1
+            p.subseed = p.subseed + 1 if p.subseed_strength > 0
+            p.seed    = p.seed    + 1 if p.subseed_strength == 0
         if t2iii_clip > 0:
             opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
         return proc
