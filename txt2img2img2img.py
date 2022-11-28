@@ -99,7 +99,8 @@ class Script(scripts.Script):
                     seed_resize_from_h=p.seed_resize_from_h,
                     seed_resize_from_w=p.seed_resize_from_w,
                     #seed_enable_extras=p.seed_enable_extras,
-                    sampler_index=img2img_sampler_index,
+                    sampler_name=t2iii_sampler,
+#                     sampler_index=img2img_sampler_index,
                     batch_size=p.batch_size,
                     n_iter=p.n_iter,
                     steps=t2iii_steps,
@@ -108,7 +109,7 @@ class Script(scripts.Script):
                     height=upscale_y,
                     restore_faces=t2iii_face_correction or (t2iii_face_correction_last and t2iii_reprocess-1 == i),
                     tiling=p.tiling,
-                    do_not_save_samples=True,
+                    do_not_save_samples=(t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last,
                     do_not_save_grid=p.do_not_save_grid,
                     extra_generation_params=p.extra_generation_params,
                     overlay_images=p.overlay_images,
@@ -116,9 +117,6 @@ class Script(scripts.Script):
                     eta=p.eta
                     )
                 proc2 = process_images(img2img_processing)
-                if (t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last :
-                    image = proc2.images[0]
-                    images.save_image(image, p.outpath_samples, "", proc2.seed, proc2.prompt, opts.samples_format, info= proc2.info, p=p)
             p.seed+=1
         if t2iii_clip > 0:
             opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
