@@ -48,7 +48,7 @@
 }
 
 #txt2img_generate, #img2img_generate {
-    min-height: 4.5em;
+    min-height: 5.5em;
 }
 
 @media screen and (min-width: 2500px) {
