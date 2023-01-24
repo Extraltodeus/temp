@@ -15,10 +15,10 @@ class Script(scripts.Script):
     def ui(self, is_img2img):
         if is_img2img: return
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
-        t2iii_reprocess = gr.Slider(minimum=1, maximum=10, step=1, label='Number of img2img', value=3)
-        t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps', value=30)
-        t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale', value=12)
-        t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+', value=1000)
+        t2iii_reprocess = gr.Slider(minimum=1, maximum=10, step=1, label='Number of img2img ', value=1)
+        t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps ', value=6)
+        t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale ', value=7.6)
+        t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+ ', value=1)
         t2iii_denoising_strength = gr.Slider(minimum=0, maximum=1, step=0.01, label='img2img denoising strength ', value=0.4)
         with gr.Row():
             t2iii_save_first = gr.Checkbox(label='Save first image', value=False)
@@ -107,7 +107,7 @@ class Script(scripts.Script):
                     cfg_scale=t2iii_cfg_scale,
                     width=upscale_x,
                     height=upscale_y,
-                    restore_faces=t2iii_face_correction or (t2iii_face_correction_last and t2iii_reprocess-1 == i),
+                    restore_faces=(t2iii_face_correction or (t2iii_face_correction_last and t2iii_reprocess-1 == i)) and not (t2iii_reprocess-1 == i and not t2iii_face_correction_last),
                     tiling=p.tiling,
                     do_not_save_samples=not ((t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last),
                     do_not_save_grid=p.do_not_save_grid,
