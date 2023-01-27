@@ -37,8 +37,8 @@ class Script(scripts.Script):
         try:
             if params.p.simple_upscale_factor > 1:
                 w, h = params.image.size
-                w = int(w * params.p.simple_upscale_factor)
-                h = int(h * params.p.simple_upscale_factor)
+                w = int(w * math.sqrt(params.p.simple_upscale_factor))
+                h = int(h * math.sqrt(params.p.simple_upscale_factor))
                 image = params.image.resize((w, h), Image.Resampling.LANCZOS)
                 params.image = image
         except Exception:
