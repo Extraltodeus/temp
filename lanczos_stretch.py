@@ -58,5 +58,5 @@ class Script(scripts.Script):
                     image = params.image.resize((w, h), Image.Resampling.LANCZOS)
                     params.image = image
                 params.p.has_been_processed = True
-            except Exception:
-                pass
+        except Exception:
+            pass
