@@ -31,8 +31,7 @@ class Script(scripts.Script):
         return "Lanczos simple upscale"
 
     def show(self, is_img2img):
-        if not is_img2img:
-            return scripts.AlwaysVisible
+        return scripts.AlwaysVisible
 
     def ui(self, is_img2img):
         with gr.Row():
@@ -44,16 +43,17 @@ class Script(scripts.Script):
         try:
             if params.p.simple_upscale_factor > 1:
                 w, h = params.image.size
-                #w = int(w * math.sqrt(params.p.simple_upscale_factor))
-                #h = int(h * math.sqrt(params.p.simple_upscale_factor))
-                w = int(w * params.p.simple_upscale_factor)
-                h = int(h * params.p.simple_upscale_factor)
+                w = int(w * math.sqrt(params.p.simple_upscale_factor))
+                h = int(h * math.sqrt(params.p.simple_upscale_factor))
+                #w = int(w * params.p.simple_upscale_factor)
+                #h = int(h * params.p.simple_upscale_factor)
                 image = params.image.resize((w, h), Image.Resampling.LANCZOS)
                 params.image = image
             if params.p.multi_face_correction > 0:
                 x_sample = np.asarray(params.image)
                 for c in range(params.p.multi_face_correction):
                     x_sample = modules.face_restoration.restore_faces(x_sample)
+                    print("restoring face :",c,"/",params.p.multi_face_correction)
                 params.image = Image.fromarray(x_sample)
         except Exception:
             pass
