@@ -4,6 +4,7 @@ import os
 import sys
 import traceback
 import random
+from copy import deepcopy
 
 import modules.scripts as scripts
 from   modules.script_callbacks import on_before_image_saved
@@ -26,7 +27,7 @@ class Script(scripts.Script):
     def process(self, p, simple_upscale_factor,multi_face_correction):
         p.simple_upscale_factor = simple_upscale_factor
         p.multi_face_correction = multi_face_correction
-        p.has_been_processed    = False
+        p.initial_image_check   = ""
 
     def title(self):
         return "Lanczos simple upscale"
@@ -42,7 +43,7 @@ class Script(scripts.Script):
 
     def bis(self, params):
         try:
-            if not params.p.has_been_processed:
+            if params.image != params.p.initial_image_check:
                 if params.p.multi_face_correction > 0:
                     x_sample = np.asarray(params.image)
                     for c in range(params.p.multi_face_correction):
@@ -51,12 +52,10 @@ class Script(scripts.Script):
                     params.image = Image.fromarray(x_sample)
                 if params.p.simple_upscale_factor > 1:
                     w, h = params.image.size
-                    #w = int(w * math.sqrt(params.p.simple_upscale_factor))
-                    #h = int(h * math.sqrt(params.p.simple_upscale_factor))
                     w = int(w * params.p.simple_upscale_factor)
                     h = int(h * params.p.simple_upscale_factor)
                     image = params.image.resize((w, h), Image.Resampling.LANCZOS)
                     params.image = image
-                params.p.has_been_processed = True
+                params.p.initial_image_check = deepcopy(params.image)
         except Exception:
             pass
