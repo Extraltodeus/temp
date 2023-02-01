@@ -26,6 +26,7 @@ class Script(scripts.Script):
     def process(self, p, simple_upscale_factor,multi_face_correction):
         p.simple_upscale_factor = simple_upscale_factor
         p.multi_face_correction = multi_face_correction
+        p.has_been_processed    = False
 
     def title(self):
         return "Lanczos simple upscale"
@@ -41,19 +42,21 @@ class Script(scripts.Script):
 
     def bis(self, params):
         try:
-            if params.p.multi_face_correction > 0:
-                x_sample = np.asarray(params.image)
-                for c in range(params.p.multi_face_correction):
-                    x_sample = modules.face_restoration.restore_faces(x_sample)
-                    print("restoring face :",c,"/",params.p.multi_face_correction)
-                params.image = Image.fromarray(x_sample)
-            if params.p.simple_upscale_factor > 1:
-                w, h = params.image.size
-                w = int(w * math.sqrt(params.p.simple_upscale_factor))
-                h = int(h * math.sqrt(params.p.simple_upscale_factor))
-                #w = int(w * params.p.simple_upscale_factor)
-                #h = int(h * params.p.simple_upscale_factor)
-                image = params.image.resize((w, h), Image.Resampling.LANCZOS)
-                params.image = image
-        except Exception:
-            pass
+            if not params.p.has_been_processed:
+                if params.p.multi_face_correction > 0:
+                    x_sample = np.asarray(params.image)
+                    for c in range(params.p.multi_face_correction):
+                        x_sample = modules.face_restoration.restore_faces(x_sample)
+                        print("restoring face :",c+1,"/",params.p.multi_face_correction)
+                    params.image = Image.fromarray(x_sample)
+                if params.p.simple_upscale_factor > 1:
+                    w, h = params.image.size
+                    #w = int(w * math.sqrt(params.p.simple_upscale_factor))
+                    #h = int(h * math.sqrt(params.p.simple_upscale_factor))
+                    w = int(w * params.p.simple_upscale_factor)
+                    h = int(h * params.p.simple_upscale_factor)
+                    image = params.image.resize((w, h), Image.Resampling.LANCZOS)
+                    params.image = image
+                params.p.has_been_processed = True
+            except Exception:
+                pass
