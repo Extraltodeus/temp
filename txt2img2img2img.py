@@ -65,6 +65,13 @@ class Script(scripts.Script):
                 opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
             proc = process_images(p)
             basename = ""
+            extra_gen_parms = {
+            'Initial steps':p.steps,
+            'Initial CFG scale':p.cfg_scale,
+            "Initial seed": p.seed,
+            'Initial sampler': p.sampler_name,
+            'Reprocess amount':t2iii_reprocess
+            }
             for i in range(t2iii_reprocess):
                 if t2iii_clip > 0:
                     opts.data["CLIP_stop_at_last_layers"] = t2iii_clip
@@ -111,7 +118,7 @@ class Script(scripts.Script):
                     tiling=p.tiling,
                     do_not_save_samples=not ((t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last),
                     do_not_save_grid=p.do_not_save_grid,
-                    extra_generation_params=proc.info,
+                    extra_generation_params=extra_gen_parms,
                     overlay_images=p.overlay_images,
                     negative_prompt=p.negative_prompt,
                     eta=p.eta
