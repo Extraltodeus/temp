@@ -15,7 +15,7 @@ class Script(scripts.Script):
     def ui(self, is_img2img):
         if is_img2img: return
         img2img_samplers_names = [s.name for s in sd_samplers.samplers_for_img2img]
-        t2iii_reprocess = gr.Slider(minimum=1, maximum=10, step=1, label='Number of img2img ', value=1)
+        t2iii_reprocess = gr.Slider(minimum=1, maximum=128, step=1, label='Number of img2img      ', value=1)
         t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps ', value=6)
         t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale ', value=7.6)
         t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+ ', value=1)
@@ -111,7 +111,7 @@ class Script(scripts.Script):
                     tiling=p.tiling,
                     do_not_save_samples=not ((t2iii_only_last and t2iii_reprocess-1 == i) or not t2iii_only_last),
                     do_not_save_grid=p.do_not_save_grid,
-                    extra_generation_params=p.extra_generation_params,
+                    extra_generation_params=proc.info,
                     overlay_images=p.overlay_images,
                     negative_prompt=p.negative_prompt,
                     eta=p.eta
