@@ -490,7 +490,6 @@ input[type="range"]{
 }
 
 #txt2img_interrupt, #img2img_interrupt, #txt2img_skip, #img2img_skip{
-    position: absolute;
     width: 50%;
     height: 100%;
     background: #b4c0cc;
