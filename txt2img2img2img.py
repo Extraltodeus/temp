@@ -18,7 +18,7 @@ class Script(scripts.Script):
         t2iii_reprocess = gr.Slider(minimum=1, maximum=128, step=1, label='Number of img2img      ', value=1)
         t2iii_steps = gr.Slider(minimum=1, maximum=120, step=1, label='img2img steps ', value=6)
         t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale ', value=7.6)
-        t2iii_seed_shift = gr.Slider(minimum=0, maximum=1000000, step=1, label='img2img new seed+ ', value=1)
+        t2iii_seed_shift = gr.Slider(minimum=-1, maximum=1000000, step=1, label='img2img new seed+ (-1 for random)', value=-1)
         t2iii_denoising_strength = gr.Slider(minimum=0, maximum=1, step=0.01, label='img2img denoising strength ', value=0.4)
         with gr.Row():
             t2iii_save_first = gr.Checkbox(label='Save first image', value=False)
@@ -73,6 +73,10 @@ class Script(scripts.Script):
             'Reprocess amount':t2iii_reprocess
             }
             for i in range(t2iii_reprocess):
+                if t2iii_seed_shift == -1:
+                    reprocess_seed = randint(0,999999999)
+                else:
+                    reprocess_seed = p.seed+t2iii_seed_shift*(i+1)
                 if t2iii_clip > 0:
                     opts.data["CLIP_stop_at_last_layers"] = t2iii_clip
                 if state.interrupted:
@@ -100,7 +104,7 @@ class Script(scripts.Script):
                     outpath_grids=p.outpath_grids,
                     prompt=proc.info.split("\nNegative prompt")[0],
                     styles=p.styles,
-                    seed=p.seed+t2iii_seed_shift*(i+1),
+                    seed=reprocess_seed,
                     subseed=proc_temp.subseed,
                     subseed_strength=p.subseed_strength,
                     seed_resize_from_h=p.seed_resize_from_h,
