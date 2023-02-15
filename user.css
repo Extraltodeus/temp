@@ -1,0 +1,2 @@
+#txt2img_generate, #img2img_generate { display: block !important; margin-top: 1rem; height: 2rem; }
+#txt2img_interrupt, #img2img_interrupt, #txt2img_skip, #img2img_skip { display: block !important; margin-top: 3rem; height: 2rem; }
