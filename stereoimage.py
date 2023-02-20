@@ -12,7 +12,7 @@ from copy import deepcopy
 
 
 input_folder=r'''
-X:\sdout\input_images_for_vid
+C:\images\tests
 '''
 input_folder=input_folder.replace("\n","")
 # IPD = 8.4
@@ -294,8 +294,8 @@ if __name__ == "__main__":
     # MODEL_PATH = "model-f46da743.pt"
     # MODEL_PATH = "midas_v21-f6b98070.pt"
     MODEL_PATH = "dpt_swin2_tiny_256.pt"
-    MODEL_PATH = "D:\StableDiffusion\Autres\stereoimage\stereo-image-generation\dpt_hybrid-midas-501f0c75.pt"
-    MODEL_PATH = "D:\StableDiffusion\Autres\stereoimage\stereo-image-generation\dpt_beit_large_512.pt"
+    MODEL_PATH = "dpt_hybrid-midas-501f0c75.pt"
+    MODEL_PATH = "dpt_beit_large_512.pt"
 
     # compute depth maps
     run(MODEL_PATH)
