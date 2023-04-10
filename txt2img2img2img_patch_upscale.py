@@ -142,12 +142,13 @@ class Script(scripts.Script):
                 else:
                     proc_temp.images[0] = proc_temp.images[0].resize((upscale_x, upscale_y), Image.Resampling.LANCZOS)
                     width_for_patch, height_for_patch = proc_temp.images[0].size
-                    overlap_odd_pass = 0
-                    if i%2!=0:
-                        overlap_odd_pass = int(t2iii_patch_square_size/2)
-                    for x in range(0, width_for_patch+overlap_odd_pass, t2iii_patch_square_size):
-                        for y in range(0, height_for_patch+overlap_odd_pass, t2iii_patch_square_size):
-                            patch = proc_temp.images[0].crop((x-t2iii_patch_padding-overlap_odd_pass, y-t2iii_patch_padding-overlap_odd_pass, x + t2iii_patch_square_size + t2iii_patch_padding-overlap_odd_pass, y + t2iii_patch_square_size + t2iii_patch_padding-overlap_odd_pass))
+                    if i != 0:
+                        overlap_pass = int(t2iii_patch_square_size/t2iii_reprocess)
+                    else:
+                        overlap_pass = 0
+                    for x in range(0, width_for_patch+overlap_pass, t2iii_patch_square_size):
+                        for y in range(0, height_for_patch+overlap_pass, t2iii_patch_square_size):
+                            patch = proc_temp.images[0].crop((x-t2iii_patch_padding-overlap_pass, y-t2iii_patch_padding-overlap_pass, x + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass, y + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass))
                             img2img_processing.init_images = [patch]
                             img2img_processing.do_not_save_samples = True
                             img2img_processing.width  = patch.size[0]
@@ -157,7 +158,7 @@ class Script(scripts.Script):
                             proc_patch_temp = process_images(img2img_processing)
                             patch = proc_patch_temp.images[0]
                             patch = patch.crop((t2iii_patch_padding, t2iii_patch_padding, patch.size[0] - t2iii_patch_padding, patch.size[1] - t2iii_patch_padding))
-                            proc_temp.images[0].paste(patch, (x-overlap_odd_pass, y-overlap_odd_pass))
+                            proc_temp.images[0].paste(patch, (x-overlap_pass, y-overlap_pass))
                     proc2 = proc_patch_temp
                     proc2.images[0] = proc_temp.images[0]
                     images.save_image(proc2.images[0], p.outpath_samples, "", proc2.seed, proc2.prompt, opts.samples_format, info=proc2.info, p=p)
