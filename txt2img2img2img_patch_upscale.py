@@ -31,11 +31,11 @@ class Script(scripts.Script):
         t2iii_sampler = gr.Dropdown(label="Sampler", choices=img2img_samplers_names, value="DDIM")
         t2iii_clip    = gr.Slider(minimum=0, maximum=12, step=1, label='change clip for img2img (0 = disabled)', value=0)
         t2iii_noise   = gr.Slider(minimum=0, maximum=0.05,  step=0.001, label='Add noise before img2img ', value=0)
-        t2iii_patch_padding = gr.Slider(minimum=0, maximum=512,  step=8, label='Patch upscale padding', value=32)
+        t2iii_patch_padding = gr.Slider(minimum=0, maximum=512,  step=2, label='Patch upscale padding', value=32)
         t2iii_patch_square_size = gr.Slider(minimum=64, maximum=1024,  step=64, label='Patch upscale square size', value=512)
         t2iii_patch_mask_blur   = gr.Slider(minimum=0, maximum=64,  step=1, label='Patch upscale mask blur', value=4)
-        t2iii_upscale_x = gr.Slider(minimum=64, maximum=2048, step=64, label='img2img width (64 = no rescale)', value=64)
-        t2iii_upscale_y = gr.Slider(minimum=64, maximum=2048, step=64, label='img2img height (64 = no rescale)', value=64)
+        t2iii_upscale_x = gr.Slider(minimum=64, maximum=8192, step=64, label='img2img width (64 = no rescale)', value=64)
+        t2iii_upscale_y = gr.Slider(minimum=64, maximum=8192, step=64, label='img2img height (64 = no rescale)', value=64)
         return    [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_patch_upscale,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_noise,t2iii_patch_padding,t2iii_patch_square_size,t2iii_patch_mask_blur,t2iii_upscale_x,t2iii_upscale_y]
     def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_patch_upscale,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_noise,t2iii_patch_padding,t2iii_patch_square_size,t2iii_patch_mask_blur,t2iii_upscale_x,t2iii_upscale_y):
         def add_noise_to_image(img,seed,t2iii_noise):
@@ -144,7 +144,7 @@ class Script(scripts.Script):
                     for x in range(0, width_for_patch, t2iii_patch_square_size):
                         for y in range(0, height_for_patch, t2iii_patch_square_size):
                             paddington = int(t2iii_patch_padding/2)
-                            patch = proc_temp.images[0].crop((x-paddington, y-paddington, x + t2iii_patch_square_size + t2iii_patch_padding, y + t2iii_patch_square_size + t2iii_patch_padding))
+                            patch = proc_temp.images[0].crop((x-paddington, y-paddington, x + t2iii_patch_square_size + paddington, y + t2iii_patch_square_size + paddington))
                             img2img_processing.init_images = [patch]
                             img2img_processing.do_not_save_samples = True
                             img2img_processing.width  = patch.size[0]
