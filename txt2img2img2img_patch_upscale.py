@@ -166,3 +166,4 @@ class Script(scripts.Script):
         if t2iii_clip > 0:
             opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
         return proc
+# something
