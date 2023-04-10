@@ -9,6 +9,12 @@ from skimage.util import random_noise
 from gradio.processing_utils import encode_pil_to_base64
 import numpy as np
 
+def remap_range(value, minIn, MaxIn, minOut, maxOut):
+            if value > MaxIn: value = MaxIn;
+            if value < minIn: value = minIn;
+            finalValue = ((value - minIn) / (MaxIn - minIn)) * (maxOut - minOut) + minOut;
+            return finalValue;
+
 class Script(scripts.Script):
     def title(self):
         return "Txt2img2img2img_patch_upscale"
@@ -35,10 +41,11 @@ class Script(scripts.Script):
         t2iii_patch_square_size = gr.Slider(minimum=64, maximum=1024,  step=64, label='Patch upscale square size', value=512)
         t2iii_patch_border      = gr.Slider(minimum=0, maximum=256,  step=1, label='Patch upscale mask border', value=32)
         t2iii_patch_mask_blur   = gr.Slider(minimum=0, maximum=64,  step=1, label='Patch upscale mask blur', value=4)
+        t2iii_patch_end_denoising   = gr.Slider(minimum=0, maximum=1,  step=0.01, label='Patch end denoising', value=0.17)
         t2iii_upscale_x = gr.Slider(minimum=64, maximum=8192, step=64, label='img2img width (64 = no rescale)', value=64)
         t2iii_upscale_y = gr.Slider(minimum=64, maximum=8192, step=64, label='img2img height (64 = no rescale)', value=64)
-        return    [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_patch_upscale,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_noise,t2iii_patch_padding,t2iii_patch_square_size,t2iii_patch_border,t2iii_patch_mask_blur,t2iii_upscale_x,t2iii_upscale_y]
-    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_patch_upscale,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_noise,t2iii_patch_padding,t2iii_patch_square_size,t2iii_patch_border,t2iii_patch_mask_blur,t2iii_upscale_x,t2iii_upscale_y):
+        return    [t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_patch_upscale,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_noise,t2iii_patch_padding,t2iii_patch_square_size,t2iii_patch_border,t2iii_patch_mask_blur,t2iii_patch_end_denoising,t2iii_upscale_x,t2iii_upscale_y]
+    def run(self,p,t2iii_reprocess,t2iii_steps,t2iii_cfg_scale,t2iii_seed_shift,t2iii_denoising_strength,t2iii_patch_upscale,t2iii_save_first,t2iii_only_last,t2iii_face_correction,t2iii_face_correction_last,t2iii_sampler,t2iii_clip,t2iii_noise,t2iii_patch_padding,t2iii_patch_square_size,t2iii_patch_border,t2iii_patch_mask_blur,t2iii_patch_end_denoising,t2iii_upscale_x,t2iii_upscale_y):
         def add_noise_to_image(img,seed,t2iii_noise):
             img = np.array(img)
             img = random_noise(img, mode='gaussian', seed=proc.seed, clip=True, var=t2iii_noise)
@@ -146,6 +153,8 @@ class Script(scripts.Script):
                     for x in range(0, width_for_patch+overlap_pass, t2iii_patch_square_size):
                         for y in range(0, height_for_patch+overlap_pass, t2iii_patch_square_size):
                             patch = proc_temp.images[0].crop((x-t2iii_patch_padding-overlap_pass, y-t2iii_patch_padding-overlap_pass, x + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass, y + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass))
+                            if t2iii_patch_end_denoising > 0:
+                                img2img_processing.denoising_strength = remap_range(i,0,t2iii_reprocess-1,t2iii_denoising_strength,t2iii_patch_end_denoising)
                             img2img_processing.init_images = [patch]
                             img2img_processing.do_not_save_samples = True
                             img2img_processing.width  = patch.size[0]
@@ -166,4 +175,3 @@ class Script(scripts.Script):
         if t2iii_clip > 0:
             opts.data["CLIP_stop_at_last_layers"] = initial_CLIP
         return proc
-# something
