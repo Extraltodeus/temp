@@ -143,7 +143,7 @@ class Script(scripts.Script):
                     width_for_patch, height_for_patch = proc_temp.images[0].size
                     for x in range(0, width_for_patch, t2iii_patch_square_size):
                         for y in range(0, height_for_patch, t2iii_patch_square_size):
-                            paddington = int(t2iii_patch_padding/2)
+                            paddington = int(t2iii_patch_padding/4*3)
                             patch = proc_temp.images[0].crop((x-t2iii_patch_padding, y-t2iii_patch_padding, x + t2iii_patch_square_size + t2iii_patch_padding, y + t2iii_patch_square_size + t2iii_patch_padding))
                             img2img_processing.init_images = [patch]
                             img2img_processing.do_not_save_samples = True
