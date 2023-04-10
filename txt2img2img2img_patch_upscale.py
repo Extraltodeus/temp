@@ -142,10 +142,7 @@ class Script(scripts.Script):
                 else:
                     proc_temp.images[0] = proc_temp.images[0].resize((upscale_x, upscale_y), Image.Resampling.LANCZOS)
                     width_for_patch, height_for_patch = proc_temp.images[0].size
-                    if i != 0:
-                        overlap_pass = int(t2iii_patch_square_size/t2iii_reprocess)
-                    else:
-                        overlap_pass = 0
+                    overlap_pass = int(t2iii_patch_square_size/t2iii_reprocess)*i
                     for x in range(0, width_for_patch+overlap_pass, t2iii_patch_square_size):
                         for y in range(0, height_for_patch+overlap_pass, t2iii_patch_square_size):
                             patch = proc_temp.images[0].crop((x-t2iii_patch_padding-overlap_pass, y-t2iii_patch_padding-overlap_pass, x + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass, y + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass))
