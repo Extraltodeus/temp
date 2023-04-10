@@ -157,7 +157,7 @@ class Script(scripts.Script):
                             proc_patch_temp = process_images(img2img_processing)
                             patch = proc_patch_temp.images[0]
                             patch = patch.crop((t2iii_patch_padding, t2iii_patch_padding, patch.size[0] - t2iii_patch_padding, patch.size[1] - t2iii_patch_padding))
-                            proc_temp.images[0].paste(patch, (x, y))
+                            proc_temp.images[0].paste(patch, (x-overlap_odd_pass, y-overlap_odd_pass))
                     proc2 = proc_patch_temp
                     proc2.images[0] = proc_temp.images[0]
                     images.save_image(proc2.images[0], p.outpath_samples, "", proc2.seed, proc2.prompt, opts.samples_format, info=proc2.info, p=p)
