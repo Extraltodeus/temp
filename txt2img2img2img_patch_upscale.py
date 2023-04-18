@@ -90,7 +90,7 @@ class Script(scripts.Script):
             'Reprocess amount':t2iii_reprocess
             }
             for i in range(t2iii_reprocess):
-                if t2iii_2x_last and i-1 == t2iii_reprocess:
+                if t2iii_2x_last and i+1 == t2iii_reprocess:
                     upscale_x = upscale_x*2
                     upscale_y = upscale_y*2
                 if t2iii_seed_shift == -1:
