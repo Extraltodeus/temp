@@ -92,8 +92,8 @@ class Script(scripts.Script):
             }
             for i in range(t2iii_reprocess):
                 if t2iii_2x_last > 1 and i+1 == t2iii_reprocess:
-                    upscale_x = upscale_x*t2iii_2x_last
-                    upscale_y = upscale_y*t2iii_2x_last
+                    upscale_x = int(upscale_x*t2iii_2x_last)
+                    upscale_y = int(upscale_y*t2iii_2x_last)
                 if t2iii_seed_shift == -1:
                     reprocess_seed = randint(0,999999999)
                 else:
