@@ -12,6 +12,7 @@ import numpy as np
 def remap_range(value, minIn, MaxIn, minOut, maxOut):
             if value > MaxIn: value = MaxIn;
             if value < minIn: value = minIn;
+            if (MaxIn - minIn) == 0 : return minOut
             finalValue = ((value - minIn) / (MaxIn - minIn)) * (maxOut - minOut) + minOut;
             return finalValue;
 
@@ -27,9 +28,9 @@ class Script(scripts.Script):
         t2iii_cfg_scale = gr.Slider(minimum=1, maximum=30, step=0.1, label='img2img cfg scale ', value=8.3)
         t2iii_seed_shift = gr.Slider(minimum=-1, maximum=1000000, step=1, label='img2img new seed+ (-1 for random)', value=1)
         t2iii_denoising_strength = gr.Slider(minimum=0, maximum=1, step=0.01, label='img2img denoising strength ', value=0.42)
+        t2iii_2x_last = gr.Slider(minimum=1, maximum=4, step=0.1, label='resize time x size for last pass', value=1)
         with gr.Row():
             t2iii_patch_upscale = gr.Checkbox(label='Patch upscale', value=False)
-            t2iii_2x_last       = gr.Checkbox(label='2x size for last', value=False)
             t2iii_save_first    = gr.Checkbox(label='Save first image', value=False)
             t2iii_only_last     = gr.Checkbox(label='Only save last img2img', value=True)
             t2iii_face_correction = gr.Checkbox(label='Face correction on all', value=False)
@@ -90,9 +91,9 @@ class Script(scripts.Script):
             'Reprocess amount':t2iii_reprocess
             }
             for i in range(t2iii_reprocess):
-                if t2iii_2x_last and i+1 == t2iii_reprocess:
-                    upscale_x = upscale_x*2
-                    upscale_y = upscale_y*2
+                if t2iii_2x_last > 1 and i+1 == t2iii_reprocess:
+                    upscale_x = upscale_x*t2iii_2x_last
+                    upscale_y = upscale_y*t2iii_2x_last
                 if t2iii_seed_shift == -1:
                     reprocess_seed = randint(0,999999999)
                 else:
@@ -113,7 +114,7 @@ class Script(scripts.Script):
                 img2img_processing = StableDiffusionProcessingImg2Img(
                     init_images=proc_temp.images,
                     resize_mode=0,
-                    denoising_strength=remap_range(i,0,t2iii_reprocess-1,t2iii_denoising_strength,t2iii_patch_end_denoising) if t2iii_patch_end_denoising > 0 else t2iii_denoising_strength,
+                    denoising_strength=remap_range(i,0,t2iii_reprocess,t2iii_denoising_strength,t2iii_patch_end_denoising) if t2iii_patch_end_denoising > 0 else t2iii_denoising_strength,
                     mask=None,
                     mask_blur=t2iii_patch_mask_blur,
                     inpainting_fill=1,
