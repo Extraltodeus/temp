@@ -12,7 +12,7 @@ import numpy as np
 def remap_range(value, minIn, MaxIn, minOut, maxOut):
             if value > MaxIn: value = MaxIn;
             if value < minIn: value = minIn;
-            if (MaxIn - minIn) == 0 : return minOut
+            if (MaxIn - minIn) == 0 : return maxOut
             finalValue = ((value - minIn) / (MaxIn - minIn)) * (maxOut - minOut) + minOut;
             return finalValue;
 
@@ -114,7 +114,7 @@ class Script(scripts.Script):
                 img2img_processing = StableDiffusionProcessingImg2Img(
                     init_images=proc_temp.images,
                     resize_mode=0,
-                    denoising_strength=remap_range(i,0,t2iii_reprocess,t2iii_denoising_strength,t2iii_patch_end_denoising) if t2iii_patch_end_denoising > 0 else t2iii_denoising_strength,
+                    denoising_strength=remap_range(i,0,t2iii_reprocess-1,t2iii_denoising_strength,t2iii_patch_end_denoising) if t2iii_patch_end_denoising > 0 else t2iii_denoising_strength,
                     mask=None,
                     mask_blur=t2iii_patch_mask_blur,
                     inpainting_fill=1,
