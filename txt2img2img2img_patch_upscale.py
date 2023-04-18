@@ -67,14 +67,7 @@ class Script(scripts.Script):
         initial_CLIP = opts.data["CLIP_stop_at_last_layers"]
         p.do_not_save_samples = not t2iii_save_first
 
-        if t2iii_upscale_x > 64:
-            upscale_x = t2iii_upscale_x
-        else:
-            upscale_x = p.width
-        if t2iii_upscale_y > 64:
-            upscale_y = t2iii_upscale_y
-        else:
-            upscale_y = p.height
+
 
         n_iter=p.n_iter
         for j in range(n_iter):
@@ -91,6 +84,14 @@ class Script(scripts.Script):
             'Reprocess amount':t2iii_reprocess
             }
             for i in range(t2iii_reprocess):
+                if t2iii_upscale_x > 64:
+                    upscale_x = t2iii_upscale_x
+                else:
+                    upscale_x = p.width
+                if t2iii_upscale_y > 64:
+                    upscale_y = t2iii_upscale_y
+                else:
+                    upscale_y = p.height
                 if t2iii_2x_last > 1 and i+1 == t2iii_reprocess:
                     upscale_x = int(upscale_x*t2iii_2x_last)
                     upscale_y = int(upscale_y*t2iii_2x_last)
