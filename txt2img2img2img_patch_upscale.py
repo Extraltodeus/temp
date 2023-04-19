@@ -67,8 +67,6 @@ class Script(scripts.Script):
         initial_CLIP = opts.data["CLIP_stop_at_last_layers"]
         p.do_not_save_samples = not t2iii_save_first
 
-
-
         n_iter=p.n_iter
         for j in range(n_iter):
             p.n_iter=1
@@ -156,8 +154,13 @@ class Script(scripts.Script):
                     proc_temp.images[0] = proc_temp.images[0].resize((upscale_x, upscale_y), Image.Resampling.LANCZOS)
                     width_for_patch, height_for_patch = proc_temp.images[0].size
                     overlap_pass = int(t2iii_patch_square_size/t2iii_reprocess)*i
+                    patch_seed = reprocess_seed
                     for x in range(0, width_for_patch+overlap_pass, t2iii_patch_square_size):
                         for y in range(0, height_for_patch+overlap_pass, t2iii_patch_square_size):
+                            if t2iii_seed_shift == -1:
+                                patch_seed = randint(0,999999999)
+                            else:
+                                patch_seed = patch_seed+t2iii_seed_shift
                             patch = proc_temp.images[0].crop((x-t2iii_patch_padding-overlap_pass, y-t2iii_patch_padding-overlap_pass, x + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass, y + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass))
                             img2img_processing.init_images = [patch]
                             img2img_processing.do_not_save_samples = True
