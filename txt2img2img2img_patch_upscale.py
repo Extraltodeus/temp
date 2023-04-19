@@ -166,6 +166,7 @@ class Script(scripts.Script):
                             img2img_processing.do_not_save_samples = True
                             img2img_processing.width  = patch.size[0]
                             img2img_processing.height = patch.size[1]
+                            img2img_processing.seed   = patch_seed
                             mask = create_mask(patch.size[0],t2iii_patch_border)
                             img2img_processing.image_mask = mask
                             proc_patch_temp = process_images(img2img_processing)
