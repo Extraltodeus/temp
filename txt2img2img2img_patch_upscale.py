@@ -153,15 +153,16 @@ class Script(scripts.Script):
                 else:
                     proc_temp.images[0] = proc_temp.images[0].resize((upscale_x, upscale_y), Image.Resampling.LANCZOS)
                     width_for_patch, height_for_patch = proc_temp.images[0].size
-                    overlap_pass = int(t2iii_patch_square_size/t2iii_reprocess)*i
+                    real_square_size = int(t2iii_patch_square_size-2*t2iii_patch_padding)
+                    overlap_pass = int(real_square_size/t2iii_reprocess)*i
                     patch_seed = reprocess_seed
-                    for x in range(0, width_for_patch+overlap_pass, t2iii_patch_square_size):
-                        for y in range(0, height_for_patch+overlap_pass, t2iii_patch_square_size):
+                    for x in range(0, width_for_patch+overlap_pass, real_square_size):
+                        for y in range(0, height_for_patch+overlap_pass, real_square_size):
                             if t2iii_seed_shift == -1:
                                 patch_seed = randint(0,999999999)
                             else:
                                 patch_seed = patch_seed+t2iii_seed_shift
-                            patch = proc_temp.images[0].crop((x-t2iii_patch_padding-overlap_pass, y-t2iii_patch_padding-overlap_pass, x + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass, y + t2iii_patch_square_size + t2iii_patch_padding-overlap_pass))
+                            patch = proc_temp.images[0].crop((x-t2iii_patch_padding-overlap_pass, y-t2iii_patch_padding-overlap_pass, x + real_square_size + t2iii_patch_padding-overlap_pass, y + real_square_size + t2iii_patch_padding-overlap_pass))
                             img2img_processing.init_images = [patch]
                             img2img_processing.do_not_save_samples = True
                             img2img_processing.width  = patch.size[0]
