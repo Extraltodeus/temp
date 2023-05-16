@@ -37,7 +37,7 @@ class ImageEmbedder:
     @staticmethod
     def mix_string(s, seed):
         s_list = list(s)
-        random.seed(seed)
+        random.seed(seed, version=2)
         random.shuffle(s_list)
         mixed_string = ''.join(s_list)
         return mixed_string
