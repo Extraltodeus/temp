@@ -21,11 +21,13 @@ class pre_cfg_perp_neg:
         nocond = convert_cond([[empty_cond, {"pooled_output": pooled}]])
 
         def pre_cfg_perp_neg_function(args):
-            noise_pred_pos = args["conds_out"][0]
-            if len(args["conds_out"]) > 1:
-                noise_pred_neg = args["conds_out"][1]
+            conds_out = args["conds_out"]
+            noise_pred_pos = conds_out[0]
+
+            if torch.any(conds_out[1]):
+                noise_pred_neg = conds_out[1]
             else:
-                return args["conds_out"]
+                return conds_out
 
             model_options = args["model_options"]
             timestep = args["timestep"]
@@ -40,8 +42,11 @@ class pre_cfg_perp_neg:
 
             perp = neg - ((torch.mul(neg, pos).sum())/(torch.norm(pos)**2)) * pos
             perp_neg = perp * neg_scale
-            
-            return [noise_pred_nocond + pos, noise_pred_nocond + perp_neg]
+
+            conds_out[0] = noise_pred_nocond + pos
+            conds_out[1] = noise_pred_nocond + perp_neg
+
+            return conds_out
 
         m = model.clone()
         m.set_model_sampler_pre_cfg_function(pre_cfg_perp_neg_function)
@@ -80,7 +85,7 @@ class condDiffSharpeningNode:
         def sharpen_conds_pre_cfg(args):
             nonlocal prev_cond, prev_uncond
             conds_out = args["conds_out"]
-            uncond = len(conds_out) > 1
+            uncond = torch.any(conds_out[1])
             
             sigma  = args["sigma"][0].item()
             first_step = sigma > (sigma_max - 1)
@@ -128,7 +133,7 @@ class condExpNode:
             if args["sigma"][0] <= 1: return args["conds_out"]
 
             conds_out = args["conds_out"]
-            uncond = len(conds_out) > 1
+            uncond = torch.any(conds_out[1])
 
             for b in range(len(conds_out[0])):
                 conds_out[0][b] = normalized_pow(conds_out[0][b], exponent)
