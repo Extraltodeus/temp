@@ -68,7 +68,7 @@ class condDiffSharpeningNode:
     def INPUT_TYPES(s):
         return {"required": {
                                 "model": ("MODEL",),
-                                "scale":     ("FLOAT",   {"default": 0.75, "min": 0.0, "max": 10.0, "step": 1/20, "round": 1/100}),
+                                "scale":     ("FLOAT",   {"default": 0.5, "min": 0.0, "max": 10.0, "step": 1/20, "round": 1/100}),
                               }
                               }
     RETURN_TYPES = ("MODEL",)
