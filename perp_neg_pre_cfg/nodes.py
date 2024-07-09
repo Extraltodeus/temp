@@ -19,7 +19,8 @@ class pre_cfg_perp_neg:
     def patch(self, model, clip, neg_scale):
         empty_cond, pooled = clip.encode_from_tokens(clip.tokenize(""), return_pooled=True)
         nocond = convert_cond([[empty_cond, {"pooled_output": pooled}]])
-
+        
+        @torch.no_grad()
         def pre_cfg_perp_neg_function(args):
             conds_out = args["conds_out"]
             noise_pred_pos = conds_out[0]
@@ -53,6 +54,7 @@ class pre_cfg_perp_neg:
         return (m, )
 
 selfnorm = lambda x: x / x.norm()
+@torch.no_grad()
 def normalize_adjust(a,b,strength=1):
     norm_a = torch.linalg.norm(a)
     a = selfnorm(a)
@@ -68,7 +70,7 @@ class condDiffSharpeningNode:
     def INPUT_TYPES(s):
         return {"required": {
                                 "model": ("MODEL",),
-                                "scale":     ("FLOAT",   {"default": 0.5, "min": 0.0, "max": 10.0, "step": 1/20, "round": 1/100}),
+                                "scale":     ("FLOAT",   {"default": 0.75, "min": 0.0, "max": 10.0, "step": 1/20, "round": 1/100}),
                               }
                               }
     RETURN_TYPES = ("MODEL",)
@@ -82,6 +84,7 @@ class condDiffSharpeningNode:
         prev_cond   = None
         prev_uncond = None
 
+        @torch.no_grad()
         def sharpen_conds_pre_cfg(args):
             nonlocal prev_cond, prev_uncond
             conds_out = args["conds_out"]
@@ -108,6 +111,7 @@ class condDiffSharpeningNode:
         m.set_model_sampler_pre_cfg_function(sharpen_conds_pre_cfg)
         return (m, )
 
+@torch.no_grad()
 def normalized_pow(t,p):
     t_norm = t.norm()
     t_sign = t.sign()
@@ -129,6 +133,7 @@ class condExpNode:
     CATEGORY = "model_patches"
 
     def patch(self, model, exponent):
+        @torch.no_grad()
         def exponentiate_conds_pre_cfg(args):
             if args["sigma"][0] <= 1: return args["conds_out"]
 
@@ -146,6 +151,7 @@ class condExpNode:
         m.set_model_sampler_pre_cfg_function(exponentiate_conds_pre_cfg)
         return (m, )
 
+@torch.no_grad()
 def topk_average(latent, top_k=0.25):
     max_values = torch.topk(latent, k=int(len(latent)*top_k), largest=True).values
     min_values = torch.topk(latent, k=int(len(latent)*top_k), largest=False).values
@@ -167,6 +173,7 @@ class automatic_cfg_simplified:
     CATEGORY = "model_patches"
 
     def patch(self, model):
+        @torch.no_grad()
         def automatic_cfg(args):
             cond   = args["cond_denoised"]
             uncond = args["uncond_denoised"]
