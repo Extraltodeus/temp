@@ -86,3 +86,18 @@ def spherical_batch_interpolation(t, w=None, target_magnitude=None, weighted_mag
     res = t.unsqueeze(1).repeat(1, batch_size - 1, 1) * torch.sin(w.div(batch_size - 1).unsqueeze(1).repeat(1, batch_size - 1, 1) * omegas.unsqueeze(-1)) / sin_omega.unsqueeze(-1)
     res = res.sum(dim=[0, 1])
     return res
+
+# this one is for latent spaces of dim [batch, channel, y, x]
+# t is the batch of latents, tn is the batch of latents divided by it's norm so torch.linalg.matrix_norm(t, keepdim=True)
+# and w are the weights, shaped like the batch of latents
+@torch.no_grad()
+def matrix_batch_slerp(t, tn, w):
+    dots = torch.mul(tn.unsqueeze(0), tn.unsqueeze(1)).sum(dim=[-1,-2], keepdim=True).clamp(min=-1.0, max=1.0)
+    mask = ~torch.eye(t.shape[0], dtype=torch.bool, device=t.device)
+    A, B, C, D, E = dots.shape
+    dots = dots[mask].reshape(A, B - 1, C, D, E)
+    omegas = dots.acos()
+    sin_omega = omegas.sin()
+    res = t.unsqueeze(1).repeat(1, B - 1, 1, 1, 1) * torch.sin(w.div(B - 1).unsqueeze(1).repeat(1, B - 1, 1, 1, 1) * omegas) / sin_omega
+    res = res.sum(dim=[0, 1]).unsqueeze(0)
+    return res
