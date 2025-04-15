@@ -44,6 +44,7 @@ def spherical_batch_interpolation(t, w=None, target_magnitude=None, weighted_mag
     Takes a batch of vectors 't' of shape [batch, ndim] and optional weights 'w'.
     The weights can be a simple array, a batch of scalars or even be the same shape as the input batch.
     Allowing to weight each individual dimension if needed.
+    returns a single vector of shape [ndim]
     """
     t, should_return = check_return(t, w)
     if should_return:
