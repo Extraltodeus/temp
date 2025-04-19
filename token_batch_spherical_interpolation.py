@@ -44,7 +44,6 @@ def spherical_batch_interpolation(t, w=None, target_magnitude=None, weighted_mag
     Takes a batch of vectors 't' of shape [batch, ndim] and optional weights 'w'.
     The weights can be a simple array, a batch of scalars or even be the same shape as the input batch.
     Allowing to weight each individual dimension if needed.
-    returns a single vector of shape [ndim]
     """
     t, should_return = check_return(t, w)
     if should_return:
@@ -74,18 +73,29 @@ def spherical_batch_interpolation(t, w=None, target_magnitude=None, weighted_mag
     batch_size = t.shape[0]
     norms = torch.linalg.norm(t, dim=1, keepdim=True)
     v = t / norms
-    dots = torch.mm(v, v.T).clamp(min=-1.0, max=1.0)
 
+    dots = torch.mm(v, v.T).clamp(min=-1.0, max=1.0)
     mask = ~torch.eye(batch_size, dtype=torch.bool, device=t.device)
     dots = dots[mask].reshape(batch_size, batch_size - 1)
 
     omegas = dots.acos()
     sin_omega = omegas.sin()
 
-    # repeats each vector and respective weights / (batch_size - 1) so each uses it's own dot products versus every other vector and have it's own weight divided by as many versus.
-    # then recombine them using their sum on the repeated axis for each duplicated version and on the last axis to complete the weighted average.
-    res = t.unsqueeze(1).repeat(1, batch_size - 1, 1) * torch.sin(w.div(batch_size - 1).unsqueeze(1).repeat(1, batch_size - 1, 1) * omegas.unsqueeze(-1)) / sin_omega.unsqueeze(-1)
+    # repeats each vector and respective weights / (batch_size - 1) so each uses it's own dot products versus every other vector.
+    # then recombine them using their sum on the repeated axis and the last axis to complete the weighted average.
+    res = v.unsqueeze(1).repeat(1, batch_size - 1, 1) * torch.sin(w.div(batch_size - 1).unsqueeze(1).repeat(1, batch_size - 1, 1) * omegas.unsqueeze(-1)) / sin_omega.unsqueeze(-1)
     res = res.sum(dim=[0, 1])
+    # return res
+
+    if target_magnitude is not None:
+        return res * target_magnitude / torch.linalg.norm(res)
+    if not w_none:
+        tm = w.sum(dim=1)
+        tm = tm / tm.sum(dim=0)
+        target_magnitude = (norms.squeeze(1) * tm).sum(dim=0)
+    else:
+        target_magnitude = norms.mean()
+    res = res * target_magnitude / torch.linalg.norm(res)
     return res
 
 # this one is for latent spaces of dim [batch, channel, y, x]
